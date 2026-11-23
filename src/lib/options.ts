@@ -1,0 +1,132 @@
+export const RELIGIONS = ["Hindu", "Muslim", "Christian", "Sikh", "Jain", "Buddhist", "Parsi"];
+export const COMMUNITIES = [
+  "Agarwal",
+  "Brahmin",
+  "Catholic",
+  "Digambar",
+  "Iyer",
+  "Jat",
+  "Kayastha",
+  "Khatri",
+  "Maratha",
+  "Marwari",
+  "Nair",
+  "Patel",
+  "Protestant",
+  "Rajput",
+  "Reddy",
+  "Shia",
+  "Shwetambar",
+  "Sunni",
+  "Syrian Christian",
+  "Other",
+];
+export const MOTHER_TONGUES = [
+  "Hindi",
+  "Marathi",
+  "Tamil",
+  "Telugu",
+  "Kannada",
+  "Malayalam",
+  "Bengali",
+  "Gujarati",
+  "Punjabi",
+  "Urdu",
+  "Odia",
+  "Konkani",
+];
+export const CITIES = [
+  "Mumbai",
+  "Delhi",
+  "Bengaluru",
+  "Hyderabad",
+  "Chennai",
+  "Kolkata",
+  "Pune",
+  "Ahmedabad",
+  "Jaipur",
+  "Lucknow",
+  "Kochi",
+  "Chandigarh",
+  "Indore",
+  "Bhopal",
+  "Nagpur",
+  "Coimbatore",
+  "Guwahati",
+  "Bhubaneswar",
+];
+export const MARITAL_STATUSES = ["Never Married", "Divorced", "Widowed", "Awaiting Divorce"];
+export const QUALIFICATIONS = [
+  "B.Tech / B.E.",
+  "M.Tech / M.E.",
+  "MBA / PGDM",
+  "MBBS / MD",
+  "CA / CS",
+  "B.Com",
+  "M.Com",
+  "B.Sc",
+  "M.Sc",
+  "BA",
+  "MA",
+  "LLB / LLM",
+  "B.Arch",
+  "B.Des / M.Des",
+  "PhD",
+];
+export const OCCUPATIONS = [
+  "Software Engineer",
+  "Doctor",
+  "Chartered Accountant",
+  "Teacher / Professor",
+  "Business Owner",
+  "Civil Services",
+  "Architect",
+  "Lawyer",
+  "Banking Professional",
+  "Marketing Manager",
+  "Designer",
+  "Data Scientist",
+  "Government Employee",
+  "Consultant",
+  "Not Working",
+];
+export const INCOMES = [
+  "Below ₹3 LPA",
+  "₹3–6 LPA",
+  "₹6–10 LPA",
+  "₹10–15 LPA",
+  "₹15–25 LPA",
+  "₹25–50 LPA",
+  "₹50 LPA+",
+];
+export const FAMILY_TYPES = ["Nuclear", "Joint"];
+export const FAMILY_VALUES = ["Traditional", "Moderate", "Liberal"];
+export const DIETS = ["Vegetarian", "Non-Vegetarian", "Eggetarian", "Vegan", "Jain"];
+export const HABITS = ["No", "Occasionally", "Yes"];
+export const HOBBIES = [
+  "Reading",
+  "Travel",
+  "Cooking",
+  "Music",
+  "Classical Dance",
+  "Cricket",
+  "Yoga",
+  "Photography",
+  "Trekking",
+  "Painting",
+  "Movies",
+  "Gardening",
+  "Fitness",
+  "Volunteering",
+];
+export const CREATED_BY = ["Self", "Parent", "Sibling", "Relative"] as const;
+export const REPORT_REASONS = [
+  "Fake or misleading profile",
+  "Inappropriate content",
+  "Asked for money",
+  "Already married",
+  "Harassment",
+  "Other",
+];
+export const HEIGHTS = Array.from({ length: 62 }, (_, i) => 137 + i); // 4'6" – 6'6"
+export const AGES = Array.from({ length: 43 }, (_, i) => 18 + i);
