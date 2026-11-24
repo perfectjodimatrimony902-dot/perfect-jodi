@@ -101,6 +101,7 @@ function MessagesPage() {
                     name={t.other.name}
                     imageUrl={t.other.photoUrl || getProfilePhoto(t.other)}
                     tone={t.other.tone}
+                    photoUrl={t.other.photoUrl}
                     size="sm"
                     className="ring-1 ring-offset-1"
                   />
@@ -130,6 +131,7 @@ function MessagesPage() {
                     name={active.other.name}
                     imageUrl={active.other.photoUrl || getProfilePhoto(active.other)}
                     tone={active.other.tone}
+                    photoUrl={active.other.photoUrl}
                     size="sm"
                     className="ring-1 ring-offset-1"
                   />

@@ -23,6 +23,7 @@ export function MiniProfileRow({
           name={profile.name}
           imageUrl={profile.photoUrl || getProfilePhoto(profile)}
           tone={profile.tone}
+          photoUrl={profile.photoUrl}
           size="sm"
           className="ring-1 ring-offset-1"
         />

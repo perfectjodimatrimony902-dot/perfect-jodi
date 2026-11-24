@@ -14,19 +14,31 @@ const SIZES = {
   xl: "h-36 w-36 text-5xl",
 };
 
+/** Matrimonial profile avatar with Cloudinary image support & initial/tone fallback */
 export function ProfileAvatar({
   name,
   imageUrl,
   tone = 0,
   size = "md",
   className,
+  photoUrl,
 }: {
   name: string;
   imageUrl?: string;
   tone?: number;
   size?: keyof typeof SIZES;
   className?: string;
+  photoUrl?: string;
 }) {
+  const [imageError, setImageError] = useState(false);
+
+  if (photoUrl && !imageError) {
+    return (
+      <div
+        aria-label={`${name}'s photo`}
+        role="img"
+        className={cn(
+          "relative flex shrink-0 select-none items-center justify-center rounded-full overflow-hidden ring-2 ring-gold/60 ring-offset-2 ring-offset-card bg-muted shadow-sm",
   const [imgError, setImgError] = useState(false);
 
   if (imageUrl && !imgError) {
@@ -39,6 +51,11 @@ export function ProfileAvatar({
         )}
       >
         <img
+          src={photoUrl}
+          alt={name}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={() => setImageError(true)}
           src={imageUrl}
           alt={name}
           onError={() => setImgError(true)}
@@ -53,6 +70,7 @@ export function ProfileAvatar({
       aria-label={`${name} (avatar)`}
       role="img"
       className={cn(
+        "relative flex shrink-0 select-none items-center justify-center rounded-full font-display font-semibold text-primary-foreground ring-2 ring-gold/50 ring-offset-2 ring-offset-card shadow-sm",
         "relative flex shrink-0 select-none items-center justify-center rounded-full font-bold text-primary-foreground ring-2 ring-gold/50 ring-offset-2 ring-offset-card shadow-sm",
         TONES[tone % TONES.length],
         SIZES[size],

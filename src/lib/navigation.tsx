@@ -90,7 +90,8 @@ export function useNavigate(opts?: { from?: string }) {
     replace?: boolean;
     resetScroll?: boolean;
   }) => {
-    let url = to || opts?.from || currentPathname;
+    let basePath = (to || opts?.from || currentPathname).split("?")[0]!;
+    let url = basePath;
     if (search) {
       let resolvedSearch: Record<string, any> = {};
       if (typeof search === "function") {
@@ -108,10 +109,10 @@ export function useNavigate(opts?: { from?: string }) {
 
       const sp = new URLSearchParams();
       Object.entries(resolvedSearch).forEach(([k, v]) => {
-        if (v !== undefined) sp.set(k, String(v));
+        if (v !== undefined && v !== "") sp.set(k, String(v));
       });
       const qs = sp.toString();
-      if (qs) url += `${url.includes("?") ? "&" : "?"}${qs}`;
+      if (qs) url = `${basePath}?${qs}`;
     }
 
     if (replace) {
@@ -146,17 +147,17 @@ export function useLocation<T = { pathname: string; search: Record<string, strin
   select?: (loc: { pathname: string; search: Record<string, string> }) => T;
 }): T {
   const pathname = useNextPathname() || "/";
-  const [search, setSearch] = useState<Record<string, string>>({});
+  const nextSearchParams = useNextSearchParams();
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const sp = new URLSearchParams(window.location.search);
+  const search = React.useMemo(() => {
     const s: Record<string, string> = {};
-    sp.forEach((v, k) => {
-      s[k] = v;
-    });
-    setSearch(s);
-  }, []);
+    if (nextSearchParams) {
+      nextSearchParams.forEach((v, k) => {
+        s[k] = v;
+      });
+    }
+    return s;
+  }, [nextSearchParams]);
 
   const loc = { pathname, search };
   if (opts?.select) return opts.select(loc);
@@ -173,19 +174,17 @@ export function useRouterState<T = any>(opts?: {
 }
 
 export function useSearch<T = Record<string, any>>(): T {
-  const [search, setSearch] = useState<Record<string, any>>({});
+  const nextSearchParams = useNextSearchParams();
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const sp = new URLSearchParams(window.location.search);
+  return React.useMemo(() => {
     const s: Record<string, any> = {};
-    sp.forEach((v, k) => {
-      s[k] = v;
-    });
-    setSearch(s);
-  }, []);
-
-  return search as T;
+    if (nextSearchParams) {
+      nextSearchParams.forEach((v, k) => {
+        s[k] = v;
+      });
+    }
+    return s as T;
+  }, [nextSearchParams]);
 }
 
 export const Route = {

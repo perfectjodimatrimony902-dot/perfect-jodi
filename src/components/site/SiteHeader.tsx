@@ -124,6 +124,7 @@ export function SiteHeader() {
                         profile?.photoUrl || (profile ? getProfilePhoto(profile) : undefined)
                       }
                       tone={profile?.tone ?? 5}
+                      photoUrl={profile?.photoUrl}
                       size="sm"
                       className="h-8 w-8 text-xs ring-1 ring-offset-1"
                     />

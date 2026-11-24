@@ -1,8 +1,8 @@
 "use client";
 
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useNavigate, useHydrated, Route } from "@/lib/navigation";
 import { LayoutGrid, List, Search, SlidersHorizontal, UserX } from "lucide-react";
-import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -12,27 +12,41 @@ import { CardsSkeleton } from "@/components/common/PageLoader";
 import { PageHero } from "@/components/site/PageHero";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { ProfileFiltersPanel } from "@/components/profile/ProfileFiltersPanel";
-import { filterProfiles, sortProfiles, type ProfileFilters, type SortKey } from "@/lib/matching";
-import { useDemoState } from "@/lib/store";
+import { filterProfiles, sortProfiles, compatibility, type ProfileFilters, type SortKey } from "@/lib/matching";
+import { useSession } from "@/hooks/use-demo";
 import { cn } from "@/lib/utils";
 
 type BrowseSearch = ProfileFilters & { sort?: SortKey; view?: "grid" | "list" };
 
 const NUM_KEYS = ["ageMin", "ageMax", "heightMin", "heightMax"] as const;
 
-export default function ProfilesPage() {
+function ProfilesContent() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const hydrated = useHydrated();
-  const state = useDemoState();
+  const { state, profile: myProfile, account } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { sort = "newest", view = "grid", ...filters } = search;
 
+  const [queryInput, setQueryInput] = useState(filters.q ?? "");
+
+  useEffect(() => {
+    setQueryInput(filters.q ?? "");
+  }, [filters.q]);
+
+  const myProfileId = myProfile?.id || account?.profileId;
+  const myAccountId = account?.id;
+
   const results = useMemo(() => {
-    const approved = state.profiles.filter((p) => p.status === "approved");
+    const approved = state.profiles.filter((p) => {
+      if (p.status !== "approved") return false;
+      // Never show logged-in user's own profile in Browse Profiles
+      if (myProfileId && p.id === myProfileId) return false;
+      if (myAccountId && p.ownerId === myAccountId) return false;
+      return true;
+    });
     return sortProfiles(filterProfiles(approved, filters), sort);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.profiles, JSON.stringify(filters), sort]);
+  }, [state.profiles, JSON.stringify(filters), sort, myProfileId, myAccountId]);
 
   const activeCount = Object.values(filters).filter((v) => v !== undefined && v !== "").length;
 
@@ -89,8 +103,11 @@ export default function ProfilesPage() {
                 aria-label="Search by name, city or occupation"
                 placeholder="Search name, city, occupation…"
                 className="h-10 bg-card pl-9"
-                value={filters.q ?? ""}
-                onChange={(e) => update({ q: e.target.value || undefined })}
+                value={queryInput}
+                onChange={(e) => {
+                  setQueryInput(e.target.value);
+                  update({ q: e.target.value || undefined });
+                }}
               />
             </div>
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -173,7 +190,16 @@ export default function ProfilesPage() {
                   }
                 >
                   {results.map((p) => (
-                    <ProfileCard key={p.id} profile={p} layout={view} />
+                    <ProfileCard
+                      key={p.id}
+                      profile={p}
+                      layout={view}
+                      compat={
+                        myProfile && myProfile.gender !== p.gender
+                          ? compatibility(myProfile, p).score
+                          : undefined
+                      }
+                    />
                   ))}
                 </div>
               )}
@@ -182,5 +208,13 @@ export default function ProfilesPage() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function ProfilesPage() {
+  return (
+    <Suspense fallback={<CardsSkeleton />}>
+      <ProfilesContent />
+    </Suspense>
   );
 }

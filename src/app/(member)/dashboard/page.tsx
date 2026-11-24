@@ -176,6 +176,7 @@ function Dashboard() {
           name={profile.name}
           imageUrl={profile.photoUrl || getProfilePhoto(profile)}
           tone={profile.tone}
+          photoUrl={profile.photoUrl}
           size="lg"
           className="ring-offset-primary"
         />

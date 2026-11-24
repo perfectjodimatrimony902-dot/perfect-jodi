@@ -1,7 +1,16 @@
 export type Gender = "female" | "male";
 export type ProfileStatus = "pending" | "approved" | "rejected";
 export type MembershipTier = "free" | "gold" | "premium";
-export type CreatedBy = "Self" | "Parent" | "Sibling" | "Relative";
+export type CreatedBy =
+  | "Self"
+  | "Father"
+  | "Mother"
+  | "Brother"
+  | "Sister"
+  | "Parent"
+  | "Sibling"
+  | "Relative"
+  | "Guardian";
 export type InterestStatus = "pending" | "accepted" | "declined" | "withdrawn";
 
 export interface PartnerPrefs {
@@ -22,27 +31,54 @@ export interface Profile {
   name: string;
   gender: Gender;
   dob: string;
+  photoUrl?: string;
+  photos?: string[];
   heightCm: number;
+  weightKg?: number;
   maritalStatus: string;
   religion: string;
   community: string;
+  subCaste?: string;
+  gotra?: string;
+  manglik?: string;
+  birthTime?: string;
+  birthPlace?: string;
+  rashi?: string;
+  nakshatra?: string;
   motherTongue: string;
+  languages?: string[];
+  disability?: string;
+  country?: string;
+  state?: string;
   city: string;
+  nativePlace?: string;
+  willingToRelocate?: string;
   qualification: string;
+  educationLevel?: string;
+  educationField?: string;
   college: string;
+  employmentType?: string;
   occupation: string;
+  designation?: string;
   company: string;
   income: string;
   familyType: string;
+  familyStatus?: string;
   familyValues: string;
   fatherOccupation: string;
   motherOccupation: string;
+  brothersCount?: number;
+  sistersCount?: number;
   siblings: string;
+  aboutFamily?: string;
   diet: string;
   smoking: string;
   drinking: string;
   hobbies: string[];
   about: string;
+  marriageTimeline?: string;
+  livingArrangement?: string;
+  childrenPreference?: string;
   prefs: PartnerPrefs;
   tone: number;
   photoUrl?: string;
