@@ -3,6 +3,7 @@
 import { Link } from "@/lib/navigation";
 import type { ReactNode } from "react";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
+import { getProfilePhoto } from "@/data/profile-photos";
 import { ageFromDob, shortHeight } from "@/lib/matching";
 import type { Profile } from "@/lib/types";
 
@@ -20,6 +21,7 @@ export function MiniProfileRow({
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <ProfileAvatar
           name={profile.name}
+          imageUrl={profile.photoUrl || getProfilePhoto(profile)}
           tone={profile.tone}
           photoUrl={profile.photoUrl}
           size="sm"

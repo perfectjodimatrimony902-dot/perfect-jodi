@@ -1,6 +1,5 @@
 "use client";
 
-
 import { CheckCircle2, Clock, Mail, MapPin, Phone } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -13,8 +12,6 @@ import { BRAND } from "@/config/brand";
 import { submitEnquiry } from "@/lib/actions";
 import { useDemoState } from "@/lib/store";
 import { contactSchema, fieldErrors } from "@/lib/validation";
-
-
 
 const EMPTY = { name: "", email: "", phone: "", subject: "", message: "" };
 

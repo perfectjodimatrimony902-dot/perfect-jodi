@@ -1,14 +1,11 @@
 "use client";
 
-
 import { Check, Info, Minus } from "lucide-react";
 import { PageHero } from "@/components/site/PageHero";
 import { PlanCards } from "@/components/site/PlanCards";
 import { MembershipBadge } from "@/components/common/StatusBadge";
 import { PLAN_FEATURES } from "@/data/content";
 import { formatINR, useSession } from "@/hooks/use-demo";
-
-
 
 export default function MembershipPage() {
   const { state, account } = useSession();

@@ -83,7 +83,7 @@ export function HeroSlider({ stats }: HeroSliderProps) {
 
   return (
     <section
-      className="relative min-h-[580px] sm:min-h-[640px] lg:min-h-[680px] w-full overflow-hidden bg-stone-950 text-white"
+      className="relative h-[620px] sm:h-[660px] md:h-[680px] lg:h-[720px] w-full overflow-hidden bg-stone-950 text-white"
       aria-label="Matrimony Hero Showcase"
     >
       {/* Continuous Sliding Background Track */}
@@ -109,9 +109,9 @@ export function HeroSlider({ stats }: HeroSliderProps) {
         <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-gold/15 via-transparent to-transparent pointer-events-none" />
       </div>
 
-      {/* Main Foreground Content - Text on Left Side */}
-      <div className="container-page relative z-20 flex min-h-[540px] sm:min-h-[600px] lg:min-h-[640px] flex-col justify-center py-16">
-        <div className="max-w-2xl">
+      {/* Main Foreground Content - Text on Left Side with locked height to prevent layout shift */}
+      <div className="container-page relative z-20 flex h-full flex-col justify-center pt-8 pb-20 sm:pt-10 sm:pb-24">
+        <div className="max-w-2xl lg:max-w-3xl">
           {/* Eyebrow badge with glowing sparkle & Hindi tagline */}
           <div className="inline-flex items-center gap-2.5 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-gold backdrop-blur-sm w-fit shadow-md">
             <Sparkles className="h-3.5 w-3.5 text-gold animate-pulse shrink-0" />
@@ -120,19 +120,21 @@ export function HeroSlider({ stats }: HeroSliderProps) {
             <span className="text-white/90">A Journey Towards Forever ❤️</span>
           </div>
 
-          {/* Dynamic Headline */}
-          <h1 className="mt-5 text-4xl leading-[1.08] sm:text-5xl md:text-6xl lg:text-7xl font-display font-semibold tracking-tight text-white transition-all duration-500">
-            {activeSlide.title}{" "}
-            <span className="italic text-gold drop-shadow-md">{activeSlide.highlight}</span>
-          </h1>
+          {/* Dynamic Headline & Description with reserved min-height and smooth fade */}
+          <div key={activeSlide.id} className="animate-in fade-in duration-500">
+            <h1 className="mt-4 text-[30px] leading-[1.12] sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[56px] font-bold tracking-tight text-white min-h-[76px] sm:min-h-[96px] md:min-h-[116px] lg:min-h-[128px] flex flex-col justify-center">
+              <span className="block">{activeSlide.title}</span>
+              <span className="block text-gold drop-shadow-md">{activeSlide.highlight}</span>
+            </h1>
 
-          {/* Subtitle */}
-          <p className="mt-5 max-w-xl text-base sm:text-lg text-white/80 leading-relaxed transition-all duration-500">
-            {activeSlide.description}
-          </p>
+            {/* Subtitle */}
+            <p className="mt-4 max-w-xl text-sm sm:text-base md:text-lg text-white/80 leading-relaxed min-h-[44px] sm:min-h-[54px] flex items-center">
+              {activeSlide.description}
+            </p>
+          </div>
 
           {/* CTA Buttons */}
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3">
             <Button
               asChild
               variant="gold"
@@ -154,7 +156,7 @@ export function HeroSlider({ stats }: HeroSliderProps) {
           </div>
 
           {/* Quick Gender Links */}
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/70">
+          <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-2 text-xs text-white/70">
             <span>Looking to join?</span>
             <Link
               to="/register"
@@ -174,12 +176,12 @@ export function HeroSlider({ stats }: HeroSliderProps) {
           </div>
 
           {/* Trust Metrics */}
-          <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 border-t border-white/15 pt-6 text-white">
+          <dl className="mt-6 sm:mt-8 grid max-w-md grid-cols-3 gap-6 border-t border-white/15 pt-5 sm:pt-6 text-white">
             <div>
               <dt className="text-xs font-medium uppercase tracking-wider text-white/60">
                 Profiles
               </dt>
-              <dd className="font-display text-3xl font-semibold text-white mt-0.5">
+              <dd className="text-2xl sm:text-3xl font-bold text-white mt-0.5">
                 {stats.profiles}+
               </dd>
             </div>
@@ -187,24 +189,24 @@ export function HeroSlider({ stats }: HeroSliderProps) {
               <dt className="text-xs font-medium uppercase tracking-wider text-white/60">
                 Verified
               </dt>
-              <dd className="font-display text-3xl font-semibold text-gold mt-0.5">
-                {stats.verified}
-              </dd>
+              <dd className="text-2xl sm:text-3xl font-bold text-gold mt-0.5">{stats.verified}</dd>
             </div>
             <div>
               <dt className="text-xs font-medium uppercase tracking-wider text-white/60">Cities</dt>
-              <dd className="font-display text-3xl font-semibold text-white mt-0.5">
-                {stats.cities}
-              </dd>
+              <dd className="text-2xl sm:text-3xl font-bold text-white mt-0.5">{stats.cities}</dd>
             </div>
           </dl>
         </div>
       </div>
 
-      {/* Slider Controls (Arrow Buttons & Dots) */}
-      <div className="relative z-30 container-page pb-8 flex items-center justify-between">
+      {/* Slider Controls (Arrow Buttons & Dots) - Absolute positioned to maintain exact same position */}
+      <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 z-30 container-page flex items-center justify-between pointer-events-none">
         {/* Navigation Dots */}
-        <div className="flex items-center gap-2" role="tablist" aria-label="Slider Pagination">
+        <div
+          className="flex items-center gap-2 pointer-events-auto"
+          role="tablist"
+          aria-label="Slider Pagination"
+        >
           {SLIDES.map((slide, index) => {
             const isActive = index === current;
             return (
@@ -228,7 +230,7 @@ export function HeroSlider({ stats }: HeroSliderProps) {
         </div>
 
         {/* Arrow Navigation */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pointer-events-auto">
           <button
             type="button"
             onClick={prevSlide}

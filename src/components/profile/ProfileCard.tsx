@@ -1,15 +1,25 @@
 "use client";
 
 import { Link, useNavigate } from "@/lib/navigation";
-import { BadgeCheck, Briefcase, GraduationCap, Heart, MapPin, Ruler, Sparkles } from "lucide-react";
+import {
+  BadgeCheck,
+  Briefcase,
+  GraduationCap,
+  Heart,
+  MapPin,
+  Ruler,
+  Send,
+  Sparkles,
+  UserCheck,
+} from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { ProfileAvatar } from "./ProfileAvatar";
 import { MembershipBadge } from "@/components/common/StatusBadge";
+import { getProfilePhoto } from "@/data/profile-photos";
 import { useSession } from "@/hooks/use-demo";
-import { toggleShortlist } from "@/lib/actions";
-import { ageFromDob, profileCompletion, shortHeight } from "@/lib/matching";
+import { sendInterest, toggleShortlist } from "@/lib/actions";
+import { ageFromDob, shortHeight } from "@/lib/matching";
 import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -26,127 +36,253 @@ export function ProfileCard({
 }) {
   const { state, account } = useSession();
   const navigate = useNavigate();
+  const [sending, setSending] = useState(false);
+
   const owner = state.accounts.find((a) => a.id === profile.ownerId);
   const shortlisted = account ? (state.shortlists[account.id] ?? []).includes(profile.id) : false;
-  const completion = profileCompletion(profile);
   const isMine = account?.profileId === profile.id;
 
-  const onShortlist = () => {
+  // Check if an interest is already sent or received
+  const existingInterest =
+    account && account.profileId
+      ? state.interests.find(
+          (i) =>
+            (i.fromProfileId === account.profileId && i.toProfileId === profile.id) ||
+            (i.fromProfileId === profile.id && i.toProfileId === account.profileId),
+        )
+      : undefined;
+
+  const photoUrl = profile.photoUrl || getProfilePhoto(profile);
+
+  const onShortlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!account) {
       toast.info("Please log in to shortlist profiles.");
       navigate({ to: "/login", search: { redirect: "/profiles" } });
       return;
     }
     const r = toggleShortlist(profile.id);
-    if (r.ok)
+    if (r.ok) {
       toast.success(
         r.added
-          ? `${profile.name} added to your shortlist`
+          ? `${profile.name} added to your shortlist ❤️`
           : `${profile.name} removed from shortlist`,
       );
-    else toast.error(r.error);
+    } else {
+      toast.error(r.error);
+    }
   };
 
-  const facts = [
-    { icon: Ruler, text: `${ageFromDob(profile.dob)} yrs · ${shortHeight(profile.heightCm)}` },
-    { icon: MapPin, text: profile.city || "—" },
-    { icon: GraduationCap, text: profile.qualification || "—" },
-    { icon: Briefcase, text: profile.occupation || "—" },
-  ];
+  const onSendInterest = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!account) {
+      toast.info(`Please log in to connect with ${profile.name}.`);
+      navigate({ to: "/login", search: { redirect: `/profiles/${profile.id}` } });
+      return;
+    }
+    if (account.role === "admin") {
+      toast.info("Admin accounts cannot send member interests.");
+      return;
+    }
+    setSending(true);
+    const r = sendInterest(profile.id);
+    setSending(false);
+    if (r.ok) {
+      toast.success(`Interest sent to ${profile.name}! They will be notified.`);
+    } else {
+      toast.info(r.error);
+    }
+  };
 
   return (
     <article
       className={cn(
-        "group relative flex overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm transition-all duration-300 hover:border-gold/60 hover:shadow-2xl hover:-translate-y-1.5",
+        "group relative flex overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm transition-all duration-300 hover:border-gold/60 hover:shadow-xl hover:-translate-y-1.5",
         layout === "grid" ? "flex-col" : "flex-col sm:flex-row",
       )}
     >
+      {/* Visual Portrait Image Header */}
       <div
         className={cn(
-          "relative flex items-center justify-center bg-gradient-to-br from-primary/15 via-secondary to-secondary/80 overflow-hidden",
-          layout === "grid" ? "h-40" : "h-40 sm:h-auto sm:w-52",
+          "relative overflow-hidden bg-stone-900 group",
+          layout === "grid" ? "h-68 sm:h-72 w-full" : "h-68 sm:h-auto sm:w-60 shrink-0",
         )}
       >
         <div className="transition-transform duration-300 group-hover:scale-105">
           <ProfileAvatar name={profile.name} tone={profile.tone} size="lg" photoUrl={profile.photoUrl} />
         </div>
+        <img
+          src={photoUrl}
+          alt={`Portrait of ${profile.name}`}
+          loading="lazy"
+          className="h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = getProfilePhoto({
+              id: profile.id,
+              gender: profile.gender,
+            });
+          }}
+        />
 
-        {typeof compat === "number" && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-card/95 px-3 py-1 text-xs font-semibold text-primary shadow-md border border-primary/20 backdrop-blur-xs">
-            <Sparkles className="h-3 w-3 text-gold" />
-            {compat}% Match
-          </span>
-        )}
+        {/* Ambient Dark Gradient Vignette for crisp typography contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/25 to-transparent pointer-events-none" />
 
-        {!isMine && (
-          <button
-            type="button"
-            onClick={onShortlist}
-            aria-label={shortlisted ? "Remove from shortlist" : "Add to shortlist"}
-            className={cn(
-              "absolute right-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-card/95 shadow-md border border-border/60 transition-all hover:scale-110",
-              shortlisted
-                ? "text-primary border-primary/30"
-                : "text-muted-foreground hover:text-primary",
+        {/* Top Badges Bar */}
+        <div className="absolute inset-x-3.5 top-3.5 flex items-center justify-between pointer-events-none">
+          {typeof compat === "number" ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-950/80 px-3 py-1 text-xs font-semibold text-gold shadow-md border border-gold/40 backdrop-blur-md">
+              <Sparkles className="h-3 w-3 text-gold" />
+              {compat}% Match
+            </span>
+          ) : profile.verified ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/85 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 shadow-md border border-emerald-500/40 backdrop-blur-md">
+              <BadgeCheck className="h-3.5 w-3.5 text-emerald-400" />
+              Verified
+            </span>
+          ) : (
+            <div />
+          )}
+
+          {!isMine && (
+            <button
+              type="button"
+              onClick={onShortlist}
+              aria-label={shortlisted ? "Remove from shortlist" : "Add to shortlist"}
+              className={cn(
+                "pointer-events-auto flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-stone-950/70 shadow-lg border backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95",
+                shortlisted
+                  ? "border-rose-400/60 text-rose-500 bg-stone-950/90"
+                  : "border-white/20 text-white/80 hover:text-rose-400 hover:border-rose-400/50",
+              )}
+            >
+              <Heart
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  shortlisted && "fill-rose-500 text-rose-500 scale-110",
+                )}
+              />
+            </button>
+          )}
+        </div>
+
+        {/* Bottom Photo Overlay Info */}
+        <div className="absolute inset-x-3.5 bottom-3 text-white pointer-events-none">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-xl font-bold tracking-tight text-white drop-shadow-md flex items-center gap-1.5 truncate">
+              <span className="truncate">{profile.name}</span>
+              <span className="text-base font-medium text-white/90">
+                , {ageFromDob(profile.dob)}
+              </span>
+            </h3>
+            {owner && owner.membership !== "free" && (
+              <span className="shrink-0 scale-90 origin-right">
+                <MembershipBadge tier={owner.membership} />
+              </span>
             )}
-          >
-            <Heart className={cn("h-4 w-4", shortlisted && "fill-primary text-primary")} />
-          </button>
-        )}
+          </div>
+          <div className="mt-1 flex items-center gap-2 text-xs text-white/90 drop-shadow">
+            <span className="inline-flex items-center gap-1 font-medium">
+              <MapPin className="h-3 w-3 text-gold shrink-0" /> {profile.city || "India"}
+            </span>
+            <span>·</span>
+            <span className="text-white/80">{shortHeight(profile.heightCm)}</span>
+            {profile.createdBy && (
+              <>
+                <span>·</span>
+                <span className="text-[10px] uppercase tracking-wider text-gold font-bold">
+                  By {profile.createdBy}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="flex items-center gap-1.5 truncate text-xl font-display font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">
-              <span className="truncate">{profile.name}</span>
-              {profile.verified && (
-                <BadgeCheck
-                  className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"
-                  aria-label="Verified"
-                />
-              )}
-            </h3>
-            <p className="mt-1 text-xs font-medium text-muted-foreground">
+      {/* Card Body Details */}
+      <div className="flex flex-1 flex-col justify-between p-5">
+        <div>
+          {/* Tag Pills */}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="rounded-full bg-secondary/80 px-2.5 py-0.5 font-medium text-secondary-foreground border border-border/60">
               {profile.religion || "—"}
               {profile.community ? ` · ${profile.community}` : ""}
+            </span>
+            {profile.motherTongue && (
+              <span className="rounded-full bg-secondary/60 px-2.5 py-0.5 text-muted-foreground border border-border/50">
+                {profile.motherTongue}
+              </span>
+            )}
+          </div>
+
+          {/* Quick Specifications */}
+          <div className="mt-3 space-y-1.5 text-xs sm:text-sm text-foreground/85">
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-3.5 w-3.5 shrink-0 text-gold" />
+              <span className="truncate font-medium">
+                {profile.occupation || "Professional"}
+                {profile.company ? ` at ${profile.company}` : ""}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <GraduationCap className="h-3.5 w-3.5 shrink-0 text-gold" />
+              <span className="truncate font-medium">{profile.qualification || "Graduate"}</span>
+            </div>
+            {profile.income && (
+              <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                <span className="text-gold font-bold">₹</span>
+                <span className="font-medium text-foreground/75">Earns {profile.income}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Short About snippet */}
+          {profile.about && (
+            <p className="mt-3 text-xs text-muted-foreground/90 line-clamp-2 leading-relaxed border-l-2 border-gold/40 pl-2.5">
+              “{profile.about}”
             </p>
-          </div>
-          {owner && owner.membership !== "free" && <MembershipBadge tier={owner.membership} />}
-        </div>
-
-        <ul
-          className={cn(
-            "mt-4 grid gap-2 text-xs sm:text-sm",
-            layout === "list" && "sm:grid-cols-2",
           )}
-        >
-          {facts.map(({ icon: Icon, text }, i) => (
-            <li key={i} className="flex items-center gap-2 text-foreground/80">
-              <Icon className="h-4 w-4 shrink-0 text-gold" />
-              <span className="truncate font-medium">{text}</span>
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-4 pt-3 border-t border-border/60">
-          <div className="mb-1.5 flex justify-between text-[11px] text-muted-foreground font-medium">
-            <span>Profile Completeness</span>
-            <span className="text-gold-foreground font-semibold">{completion}%</span>
-          </div>
-          <Progress value={completion} className="h-1.5 bg-muted rounded-full" />
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-2 pt-1">
+        {/* Action Buttons */}
+        <div className="mt-5 pt-3 border-t border-border/60 flex items-center gap-2">
+          {!isMine && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={onSendInterest}
+              disabled={sending || !!existingInterest}
+              className={cn(
+                "flex-1 font-semibold rounded-xl text-xs sm:text-sm shadow-xs cursor-pointer transition-all gap-1.5",
+                existingInterest
+                  ? "bg-secondary text-secondary-foreground hover:bg-secondary border border-border"
+                  : "bg-primary hover:bg-primary/90 text-white shadow-primary/20",
+              )}
+            >
+              {existingInterest ? (
+                <>
+                  <UserCheck className="h-3.5 w-3.5 text-gold" />
+                  {existingInterest.status === "accepted" ? "Connected" : "Interest Sent"}
+                </>
+              ) : (
+                <>
+                  <Send className="h-3.5 w-3.5" />
+                  Connect
+                </>
+              )}
+            </Button>
+          )}
+
           <Button
             asChild
-            size="default"
-            className="flex-1 font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white shadow-sm cursor-pointer"
+            variant="outline"
+            size="sm"
+            className="flex-1 font-semibold rounded-xl text-xs sm:text-sm border-gold/40 hover:bg-gold/10 text-primary shadow-2xs cursor-pointer"
           >
             <Link to="/profiles/$id" params={{ id: profile.id }}>
               View Profile
             </Link>
           </Button>
+
           {footer}
         </div>
       </div>

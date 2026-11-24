@@ -1,6 +1,5 @@
 "use client";
 
-
 import { CheckCircle2, Heart } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -10,12 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/common/FormField";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHero } from "@/components/site/PageHero";
+import { STORY_PHOTOS } from "@/data/profile-photos";
 import { formatDate } from "@/hooks/use-demo";
 import { submitStory } from "@/lib/actions";
 import { useDemoState } from "@/lib/store";
 import { fieldErrors, storySchema } from "@/lib/validation";
-
-
 
 function StoriesPage() {
   const state = useDemoState();
@@ -52,18 +50,35 @@ function StoriesPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {stories.map((s) => (
-              <article key={s.id} className="surface flex flex-col p-7">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary font-display text-2xl text-gold ring-2 ring-gold/50 ring-offset-2 ring-offset-card">
-                  {s.couple
-                    .split("&")
-                    .map((n) => n.trim()[0])
-                    .join("")}
+              <article
+                key={s.id}
+                className="group relative overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm transition-all duration-300 hover:border-gold/60 hover:shadow-xl hover:-translate-y-1.5 flex flex-col justify-between"
+              >
+                <div className="relative h-60 w-full overflow-hidden bg-stone-900">
+                  <img
+                    src={s.photoUrl || STORY_PHOTOS[s.id] || STORY_PHOTOS.s1}
+                    alt={s.couple}
+                    className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-950/85 via-stone-950/20 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-3.5 left-4 right-4 flex items-center justify-between text-white">
+                    <h2 className="text-2xl font-bold tracking-tight text-white drop-shadow">
+                      {s.couple}
+                    </h2>
+                    <span className="text-xs text-white/90 font-medium drop-shadow">{s.city}</span>
+                  </div>
                 </div>
-                <h2 className="mt-5 text-2xl">{s.couple}</h2>
-                <p className="text-xs text-muted-foreground">
-                  {s.city} · Married {formatDate(s.marriedOn)}
-                </p>
-                <p className="mt-4 text-sm leading-relaxed text-foreground/85">{s.story}</p>
+
+                <div className="p-6 flex flex-1 flex-col justify-between">
+                  <div>
+                    <p className="text-xs text-gold-foreground font-semibold mb-2">
+                      ✦ Married on {formatDate(s.marriedOn)}
+                    </p>
+                    <p className="text-sm leading-relaxed text-foreground/85 border-l-2 border-gold/50 pl-3">
+                      “{s.story}”
+                    </p>
+                  </div>
+                </div>
               </article>
             ))}
           </div>

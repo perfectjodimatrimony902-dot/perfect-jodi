@@ -57,38 +57,125 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
       <div className="grid gap-6 md:grid-cols-3">
         {state.plans.map((plan) => {
           const featured = plan.tier === "gold";
+          const isPremium = plan.tier === "premium";
           const isCurrent = current === plan.tier;
           return (
             <div
               key={plan.tier}
               className={cn(
-                "surface relative flex flex-col p-7",
-                featured && "border-gold shadow-lift md:-translate-y-2",
+                "relative flex flex-col rounded-3xl border bg-card p-7 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5",
+                featured
+                  ? "border-2 border-gold shadow-lg shadow-gold/15 bg-gradient-to-b from-card via-card to-gold-soft/20 md:-translate-y-2"
+                  : isPremium
+                    ? "border-primary/50 shadow-md bg-gradient-to-b from-card to-primary-soft/30"
+                    : "border-border/80",
               )}
             >
               {featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gold px-3 py-1 text-xs font-bold text-gold-foreground">
-                  Most chosen
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-amber-600 to-gold px-4 py-1 text-xs font-bold text-stone-950 shadow-md">
+                  ★ Most Chosen by Families
                 </span>
               )}
-              <div className="flex items-center gap-2">
-                {plan.tier !== "free" && <Crown className="h-5 w-5 text-gold" />}
-                <h3 className="text-2xl text-primary">{plan.name}</h3>
+              {isPremium && (
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-xs font-bold text-white shadow-md">
+                  👑 Dedicated Assisted Advisor
+                </span>
+              )}
+              <div className="flex items-center gap-2.5">
+                {plan.tier !== "free" ? (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gold/15 border border-gold/30 text-gold">
+                    <Crown className="h-5 w-5 text-gold" />
+                  </div>
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary border border-border text-foreground/70">
+                    <Check className="h-5 w-5" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-2xl font-bold text-primary">{plan.name}</h3>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {plan.tier === "free"
+                      ? "Basic Discovery"
+                      : plan.tier === "gold"
+                        ? "Connect & Message"
+                        : "VIP Relationship Service"}
+                  </span>
+                </div>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">{plan.blurb}</p>
-              <div className="mt-5 flex items-baseline gap-1">
-                <span className="font-display text-4xl font-semibold">
+
+              <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed min-h-[40px]">
+                {plan.blurb}
+              </p>
+
+              <div className="mt-5 flex items-baseline gap-1.5 border-y border-border/60 py-4">
+                <span className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
                   {plan.price === 0 ? "Free" : formatINR(plan.price)}
                 </span>
                 {plan.durationMonths > 0 && (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs sm:text-sm text-muted-foreground font-medium">
                     / {plan.durationMonths} months
                   </span>
                 )}
               </div>
-              {plan.price > 0 && (
-                <p className="mt-1 text-xs font-medium text-warning">Sample / demo price</p>
+
+              {/* Highlights for compact mode */}
+              {compact && (
+                <ul className="mt-5 space-y-2 text-xs sm:text-sm text-foreground/85">
+                  {plan.tier === "free" && (
+                    <>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>Create verified profile</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>Send up to 5 interests free</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-muted-foreground">
+                        <Minus className="h-4 w-4 shrink-0" />
+                        <span>Direct phone numbers locked</span>
+                      </li>
+                    </>
+                  )}
+                  {plan.tier === "gold" && (
+                    <>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span className="font-semibold text-foreground">
+                          View verified phone & WhatsApp
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>Unlimited direct chat messaging</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>Priority search ranking & badge</span>
+                      </li>
+                    </>
+                  )}
+                  {plan.tier === "premium" && (
+                    <>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span className="font-semibold text-foreground">
+                          Dedicated Family Advisor
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>Handpicked match introductions</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>Kundali & family background assist</span>
+                      </li>
+                    </>
+                  )}
+                </ul>
               )}
+
               {!compact && (
                 <ul className="mt-6 space-y-2.5 text-sm">
                   {PLAN_FEATURES.map((f) => {
@@ -99,7 +186,7 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
                         className={cn("flex items-start gap-2", !has && "text-muted-foreground/70")}
                       >
                         {has ? (
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                         ) : (
                           <Minus className="mt-0.5 h-4 w-4 shrink-0" />
                         )}
@@ -109,25 +196,30 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
                   })}
                 </ul>
               )}
+
               <div className="mt-auto pt-7">
                 {isCurrent ? (
-                  <Button variant="outline" className="w-full" disabled>
-                    Current plan
+                  <Button variant="outline" className="w-full rounded-xl" disabled>
+                    Current Plan
                   </Button>
                 ) : plan.tier === "free" ? (
                   account ? (
-                    <Button variant="outline" className="w-full" onClick={() => choose(plan)}>
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl"
+                      onClick={() => choose(plan)}
+                    >
                       Switch to Free
                     </Button>
                   ) : (
-                    <Button asChild variant="outline" className="w-full">
-                      <Link to="/register">Register free</Link>
+                    <Button asChild variant="outline" className="w-full rounded-xl font-semibold">
+                      <Link to="/register">Register Free</Link>
                     </Button>
                   )
                 ) : (
                   <Button
                     variant={featured ? "gold" : "default"}
-                    className="w-full"
+                    className="w-full rounded-xl font-semibold shadow-md cursor-pointer"
                     onClick={() => choose(plan)}
                   >
                     Upgrade to {plan.name}
@@ -141,7 +233,7 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
       <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-display text-2xl">
+            <AlertDialogTitle className="text-2xl font-bold">
               Confirm {pending?.name} plan
             </AlertDialogTitle>
             <AlertDialogDescription>

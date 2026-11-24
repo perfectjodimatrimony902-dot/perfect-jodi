@@ -17,8 +17,6 @@ import { CREATED_BY } from "@/lib/options";
 import { cn } from "@/lib/utils";
 import { fieldErrors, makeRegisterSchema } from "@/lib/validation";
 
-
-
 export default function RegisterPage() {
   const { gender: initialGender } = Route.useSearch();
   const navigate = useNavigate();

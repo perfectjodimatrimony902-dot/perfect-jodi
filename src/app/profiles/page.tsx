@@ -91,7 +91,7 @@ function ProfilesContent() {
       />
       <section className="container-page grid gap-8 py-10 lg:grid-cols-[280px_1fr]">
         <aside className="hidden lg:block">
-          <div className="surface sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto p-5">
+          <div className="surface sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto p-5">
             {panel}
           </div>
         </aside>

@@ -16,8 +16,6 @@ import { AdminTitle } from "@/components/admin/AdminTitle";
 import { MembershipBadge, ProfileStatusBadge } from "@/components/common/StatusBadge";
 import { formatDate, useSession } from "@/hooks/use-demo";
 
-
-
 function AdminOverview() {
   const { state } = useSession();
   const members = state.accounts.filter((a) => a.role === "member");
@@ -87,7 +85,7 @@ function AdminOverview() {
                 className={alert && value > 0 ? "h-4 w-4 text-destructive" : "h-4 w-4 text-gold"}
               />
             </div>
-            <p className="mt-2 font-display text-4xl font-semibold text-primary">{value}</p>
+            <p className="mt-2 text-4xl font-bold text-primary">{value}</p>
           </Link>
         ))}
       </div>

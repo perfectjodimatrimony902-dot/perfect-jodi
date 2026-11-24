@@ -15,6 +15,7 @@ import { ProfileStatusBadge } from "@/components/common/StatusBadge";
 import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { AVATAR_TONE_CLASSES, ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { PhotoUploader } from "@/components/profile/PhotoUploader";
+import { getProfilePhoto } from "@/data/profile-photos";
 import { useSession } from "@/hooks/use-demo";
 import { saveMyProfile } from "@/lib/actions";
 import { profileCompletion, shortHeight } from "@/lib/matching";
@@ -580,6 +581,19 @@ function ProfileWizard() {
               <h2 className="text-2xl font-semibold">Profile Photo & Avatar</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Upload your profile photo saved to Cloudinary. Verified photos increase connection rates by 80%.
+        {step === 5 && (
+          <div className="flex flex-col items-center gap-6 text-center">
+            <ProfileAvatar
+              name={draft.name}
+              imageUrl={draft.photoUrl || getProfilePhoto(draft)}
+              tone={draft.tone}
+              size="xl"
+            />
+            <div>
+              <h2 className="text-2xl">Your profile picture</h2>
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                For privacy in this demo, profiles use an initials-based placeholder instead of a
+                photo. Choose a colour you like.
               </p>
             </div>
 

@@ -9,8 +9,6 @@ import { formatDateTime, useSession } from "@/hooks/use-demo";
 import { markAllNotificationsRead, markNotificationRead } from "@/lib/actions";
 import { cn } from "@/lib/utils";
 
-
-
 export default function NotificationsPage() {
   const { state, account } = useSession();
   const router = useRouter();

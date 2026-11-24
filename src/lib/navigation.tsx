@@ -9,8 +9,7 @@ import {
 } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-export interface LinkProps
-  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
+export interface LinkProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
   href?: string | object;
   to?: string;
   params?: Record<string, string | number | undefined>;
@@ -65,7 +64,8 @@ export function Link({
       ? pathname === "/"
       : pathname.startsWith(targetBase);
 
-  const finalClassName = `${className} ${isActive && activeProps?.className ? activeProps.className : ""}`.trim();
+  const finalClassName =
+    `${className} ${isActive && activeProps?.className ? activeProps.className : ""}`.trim();
 
   return (
     <NextLink href={target as any} className={finalClassName} {...props}>

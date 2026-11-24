@@ -9,11 +9,10 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/common/EmptyState";
 import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
+import { getProfilePhoto } from "@/data/profile-photos";
 import { formatDateTime, useSession } from "@/hooks/use-demo";
 import { sendMessage } from "@/lib/actions";
 import { cn } from "@/lib/utils";
-
-
 
 function MessagesPage() {
   const { with: withId } = Route.useSearch();
@@ -100,6 +99,7 @@ function MessagesPage() {
                 >
                   <ProfileAvatar
                     name={t.other.name}
+                    imageUrl={t.other.photoUrl || getProfilePhoto(t.other)}
                     tone={t.other.tone}
                     photoUrl={t.other.photoUrl}
                     size="sm"
@@ -129,6 +129,7 @@ function MessagesPage() {
                   </button>
                   <ProfileAvatar
                     name={active.other.name}
+                    imageUrl={active.other.photoUrl || getProfilePhoto(active.other)}
                     tone={active.other.tone}
                     photoUrl={active.other.photoUrl}
                     size="sm"

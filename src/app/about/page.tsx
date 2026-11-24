@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { PageHero, SectionHeading } from "@/components/site/PageHero";
 import { useDemoState } from "@/lib/store";
 
-
-
 const VALUES = [
   {
     icon: ShieldCheck,
@@ -73,7 +71,7 @@ export default function AboutPage() {
             { label: "Published success stories", value: stories },
           ].map((s) => (
             <div key={s.label} className="surface flex flex-col justify-center p-6">
-              <span className="font-display text-5xl font-semibold text-primary">{s.value}</span>
+              <span className="text-5xl font-bold text-primary">{s.value}</span>
               <span className="mt-1 text-sm text-muted-foreground">{s.label}</span>
             </div>
           ))}

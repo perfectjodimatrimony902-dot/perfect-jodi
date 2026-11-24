@@ -14,10 +14,9 @@ import {
 import { MiniProfileRow } from "@/components/member/MiniProfileRow";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
+import { getProfilePhoto } from "@/data/profile-photos";
 import { formatDate, formatDateTime, useSession } from "@/hooks/use-demo";
 import { profileCompletion, recommendedMatches } from "@/lib/matching";
-
-
 
 function Panel({
   title,
@@ -175,6 +174,7 @@ function Dashboard() {
       <section className="hero-panel flex flex-col gap-6 rounded-2xl p-6 md:flex-row md:items-center md:p-8">
         <ProfileAvatar
           name={profile.name}
+          imageUrl={profile.photoUrl || getProfilePhoto(profile)}
           tone={profile.tone}
           photoUrl={profile.photoUrl}
           size="lg"
@@ -227,7 +227,7 @@ function Dashboard() {
                 <span className="text-sm text-muted-foreground">{label}</span>
                 <Icon className="h-4 w-4 text-gold" />
               </div>
-              <p className="mt-2 font-display text-4xl font-semibold text-primary">{value}</p>
+              <p className="mt-2 text-4xl font-bold text-primary">{value}</p>
               <p className="text-xs text-muted-foreground">{sub}</p>
             </>
           );
@@ -440,7 +440,12 @@ function Dashboard() {
                     params={{ id: p.id }}
                     className="surface flex w-40 shrink-0 flex-col items-center p-4 text-center transition-shadow hover:shadow-lift"
                   >
-                    <ProfileAvatar name={p.name} tone={p.tone} size="md" />
+                    <ProfileAvatar
+                      name={p.name}
+                      imageUrl={p.photoUrl || getProfilePhoto(p)}
+                      tone={p.tone}
+                      size="md"
+                    />
                     <span className="mt-3 line-clamp-1 text-sm font-semibold">{p.name}</span>
                     <span className="text-xs text-muted-foreground">{p.city}</span>
                   </Link>

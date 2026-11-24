@@ -81,6 +81,8 @@ export interface Profile {
   childrenPreference?: string;
   prefs: PartnerPrefs;
   tone: number;
+  photoUrl?: string;
+  photos?: string[];
   status: ProfileStatus;
   rejectionReason?: string;
   verified: boolean;
@@ -159,6 +161,7 @@ export interface SuccessStory {
   marriedOn: string;
   story: string;
   published: boolean;
+  photoUrl?: string;
 }
 
 export interface Enquiry {

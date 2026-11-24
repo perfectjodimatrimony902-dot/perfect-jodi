@@ -22,8 +22,6 @@ import { AuthGate } from "@/components/common/AuthGate";
 import { useSession } from "@/hooks/use-demo";
 import { logout } from "@/lib/actions";
 
-
-
 function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
   const { state } = useSession();
   const pending = state.profiles.filter((p) => p.status === "pending").length;
@@ -65,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
   const brand = (
     <div className="px-3">
-      <p className="font-display text-2xl text-sidebar-foreground">{state.settings.siteName}</p>
+      <p className="text-2xl font-bold text-sidebar-foreground">{state.settings.siteName}</p>
       <p className="eyebrow mt-1">Admin · demo</p>
     </div>
   );
@@ -117,9 +115,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Button>
             </div>
           </header>
-          <main className="flex-1 p-4 md:p-8">
-            {children}
-          </main>
+          <main className="flex-1 p-4 md:p-8">{children}</main>
         </div>
       </div>
     </AuthGate>
