@@ -40,7 +40,6 @@ import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type MatchTab = "daily" | "mutual" | "near_me" | "kundali" | "reverse";
-import { recommendedMatches } from "@/lib/matching";
 
 export default function MatchesPage() {
   const { state, profile, account } = useSession();

@@ -31,34 +31,24 @@ export function ProfileAvatar({
   photoUrl?: string;
 }) {
   const [imageError, setImageError] = useState(false);
+  const effectiveUrl = photoUrl || imageUrl;
 
-  if (photoUrl && !imageError) {
+  if (effectiveUrl && !imageError) {
     return (
       <div
         aria-label={`${name}'s photo`}
         role="img"
         className={cn(
-          "relative flex shrink-0 select-none items-center justify-center rounded-full overflow-hidden ring-2 ring-gold/60 ring-offset-2 ring-offset-card bg-muted shadow-sm",
-  const [imgError, setImgError] = useState(false);
-
-  if (imageUrl && !imgError) {
-    return (
-      <div
-        className={cn(
-          "relative flex shrink-0 select-none overflow-hidden rounded-full ring-2 ring-gold/40 ring-offset-2 ring-offset-card bg-secondary/60 shadow-sm",
+          "relative flex shrink-0 select-none overflow-hidden rounded-full ring-2 ring-gold/50 ring-offset-2 ring-offset-card bg-secondary/60 shadow-sm",
           SIZES[size],
           className,
         )}
       >
         <img
-          src={photoUrl}
+          src={effectiveUrl}
           alt={name}
-          className="h-full w-full object-cover"
           loading="lazy"
           onError={() => setImageError(true)}
-          src={imageUrl}
-          alt={name}
-          onError={() => setImgError(true)}
           className="h-full w-full object-cover object-center transition-transform duration-300 hover:scale-105"
         />
       </div>
@@ -71,7 +61,6 @@ export function ProfileAvatar({
       role="img"
       className={cn(
         "relative flex shrink-0 select-none items-center justify-center rounded-full font-display font-semibold text-primary-foreground ring-2 ring-gold/50 ring-offset-2 ring-offset-card shadow-sm",
-        "relative flex shrink-0 select-none items-center justify-center rounded-full font-bold text-primary-foreground ring-2 ring-gold/50 ring-offset-2 ring-offset-card shadow-sm",
         TONES[tone % TONES.length],
         SIZES[size],
         className,

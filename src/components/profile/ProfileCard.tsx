@@ -108,9 +108,6 @@ export function ProfileCard({
           layout === "grid" ? "h-68 sm:h-72 w-full" : "h-68 sm:h-auto sm:w-60 shrink-0",
         )}
       >
-        <div className="transition-transform duration-300 group-hover:scale-105">
-          <ProfileAvatar name={profile.name} tone={profile.tone} size="lg" photoUrl={profile.photoUrl} />
-        </div>
         <img
           src={photoUrl}
           alt={`Portrait of ${profile.name}`}

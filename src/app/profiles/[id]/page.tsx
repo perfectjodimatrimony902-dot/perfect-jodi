@@ -214,13 +214,6 @@ export default function ProfileDetailPage() {
             <ChevronRight className="h-3 w-3" />
             <span className="text-foreground font-semibold">{profile.name}</span>
           </nav>
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            <ProfileAvatar name={profile.name} tone={profile.tone} size="xl" photoUrl={profile.photoUrl} />
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-4xl text-primary md:text-5xl">{profile.name}</h1>
-                {profile.verified && (
-                  <BadgeCheck className="h-6 w-6 text-success" aria-label="Verified" />
 
           {/* Elevated Biodata Hero Card */}
           <div className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm relative overflow-hidden">

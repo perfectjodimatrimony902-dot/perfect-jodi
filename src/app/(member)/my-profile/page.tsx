@@ -576,12 +576,6 @@ function ProfileWizard() {
 
         {/* Step 6: Photo & Tone */}
         {step === 6 && (
-          <div className="space-y-6">
-            <div className="text-center sm:text-left">
-              <h2 className="text-2xl font-semibold">Profile Photo & Avatar</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Upload your profile photo saved to Cloudinary. Verified photos increase connection rates by 80%.
-        {step === 5 && (
           <div className="flex flex-col items-center gap-6 text-center">
             <ProfileAvatar
               name={draft.name}
@@ -590,10 +584,9 @@ function ProfileWizard() {
               size="xl"
             />
             <div>
-              <h2 className="text-2xl">Your profile picture</h2>
+              <h2 className="text-2xl font-semibold">Profile Photo & Avatar</h2>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                For privacy in this demo, profiles use an initials-based placeholder instead of a
-                photo. Choose a colour you like.
+                Upload your profile photo. Verified photos increase connection rates by 80%.
               </p>
             </div>
 
