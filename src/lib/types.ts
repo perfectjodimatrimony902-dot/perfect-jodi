@@ -81,8 +81,6 @@ export interface Profile {
   childrenPreference?: string;
   prefs: PartnerPrefs;
   tone: number;
-  photoUrl?: string;
-  photos?: string[];
   status: ProfileStatus;
   rejectionReason?: string;
   verified: boolean;
