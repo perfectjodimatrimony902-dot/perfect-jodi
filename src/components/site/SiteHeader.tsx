@@ -11,6 +11,7 @@ import {
   Heart,
   Send,
   Shield,
+  Sparkles,
   User,
   Inbox,
 } from "lucide-react";
@@ -83,6 +84,18 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {account ? (
             <>
+              {!profile && account.role === "member" && (
+                <Button
+                  asChild
+                  size="sm"
+                  className="hidden bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 sm:inline-flex"
+                >
+                  <Link to="/create-profile" className="flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-gold" />
+                    <span>Create Profile</span>
+                  </Link>
+                </Button>
+              )}
               {account.role === "member" && (
                 <Button
                   asChild
@@ -122,6 +135,16 @@ export function SiteHeader() {
                     <div className="truncate text-xs text-muted-foreground">{account.email}</div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {!profile && account.role === "member" && (
+                    <DropdownMenuItem
+                      asChild
+                      className="bg-primary/10 font-semibold text-primary focus:bg-primary/15"
+                    >
+                      <Link to="/create-profile">
+                        <Sparkles className="mr-2 h-4 w-4 text-gold" /> Create Profile
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   {account.role === "admin" ? (
                     <DropdownMenuItem asChild>
                       <Link to="/admin">
@@ -181,21 +204,33 @@ export function SiteHeader() {
                     {l.label}
                   </Link>
                 ))}
-                {account?.role === "member" &&
-                  [
-                    ...MEMBER_LINKS,
-                    { to: "/notifications", label: "Notifications", icon: Bell } as const,
-                  ].map((l) => (
-                    <Link
-                      key={l.to}
-                      to={l.to}
-                      onClick={() => setOpen(false)}
-                      className="border-b py-3 text-sm text-foreground/80"
-                      activeProps={{ className: "text-primary" }}
-                    >
-                      {l.label}
-                    </Link>
-                  ))}
+                {account?.role === "member" && (
+                  <>
+                    {!profile && (
+                      <Link
+                        to="/create-profile"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2 border-b py-3 font-semibold text-primary"
+                      >
+                        <Sparkles className="h-4 w-4 text-gold" /> Create Profile
+                      </Link>
+                    )}
+                    {[
+                      ...MEMBER_LINKS,
+                      { to: "/notifications", label: "Notifications", icon: Bell } as const,
+                    ].map((l) => (
+                      <Link
+                        key={l.to}
+                        to={l.to}
+                        onClick={() => setOpen(false)}
+                        className="border-b py-3 text-sm text-foreground/80"
+                        activeProps={{ className: "text-primary" }}
+                      >
+                        {l.label}
+                      </Link>
+                    ))}
+                  </>
+                )}
                 {account?.role === "admin" && (
                   <Link
                     to="/admin"

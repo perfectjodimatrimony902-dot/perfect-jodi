@@ -12,7 +12,7 @@ import { FormField } from "@/components/common/FormField";
 import { NativeSelect } from "@/components/common/NativeSelect";
 import { DEMO_OTP } from "@/config/brand";
 import { useSession } from "@/hooks/use-demo";
-import { checkRegistration, completeRegistration, type RegisterInput } from "@/lib/actions";
+import { checkRegistration, completeRegistration, syncMongoSession, type RegisterInput } from "@/lib/actions";
 import { CREATED_BY } from "@/lib/options";
 import { cn } from "@/lib/utils";
 import { fieldErrors, makeRegisterSchema } from "@/lib/validation";
@@ -71,23 +71,57 @@ export default function RegisterPage() {
     toast.info(`Demo OTP sent to +91 ${input.mobile}`);
   };
 
-  const verify = () => {
-    if (!pending) return;
-    if (otp.length !== 6) {
-      setOtpError("Enter the 6-digit code.");
-      return;
-    }
-    setBusy(true);
-    window.setTimeout(() => {
-      const r = completeRegistration(pending, otp);
-      setBusy(false);
-      if (!r.ok) {
-        setOtpError(r.error);
+    const verify = async () => {
+      if (!pending) return;
+      if (otp.length !== 6) {
+        setOtpError("Enter the 6-digit code.");
         return;
       }
-      toast.success("Mobile verified! Let's complete your profile.");
-      navigate({ to: "/my-profile" });
-    }, 500);
+      if (otp !== DEMO_OTP) {
+        setOtpError(`Invalid code. Enter the verification code ${DEMO_OTP}.`);
+        return;
+      }
+
+      setBusy(true);
+        setOtpError("");
+
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: pending.name,
+              gender: pending.gender,
+              dob: pending.dob,
+              email: pending.email,
+              mobile: pending.mobile,
+              password: pending.password,
+              createdBy: pending.createdBy,
+            }),
+          });
+
+          const data = await res.json();
+          setBusy(false);
+
+          if (!res.ok || !data.ok) {
+            setOtpError(data.error || "Registration failed. Please try again.");
+            return;
+          }
+
+          syncMongoSession(data.user, null, data.token);
+          toast.success("Account verified & created successfully! Now let's create your matrimony profile.");
+          navigate({ to: "/create-profile" });
+        } catch {
+          // Offline / fallback to local state
+          const r = completeRegistration(pending, otp);
+          setBusy(false);
+          if (!r.ok) {
+            setOtpError(r.error);
+            return;
+          }
+          toast.success("Mobile verified! Let's complete your profile.");
+      navigate({ to: "/create-profile" });
+    }
   };
 
   if (account) {

@@ -97,7 +97,137 @@ export function login(email: string, password: string): Result & { role?: Accoun
 }
 
 export function logout() {
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem("pj_jwt_token");
+      fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    } catch {}
+  }
   setState((s) => ({ ...s, session: null }));
+}
+
+export function syncMongoSession(
+  user: {
+    id?: string;
+    _id?: string;
+    name: string;
+    email: string;
+    mobile?: string;
+    gender?: Gender;
+    dob?: string;
+    createdBy?: CreatedBy;
+    role?: Account["role"];
+    membership?: { tier?: MembershipTier } | MembershipTier;
+    status?: Account["status"];
+    profileId?: string;
+    createdAt?: string;
+  },
+  profile?: any,
+  token?: string,
+) {
+  if (token && typeof window !== "undefined") {
+    try {
+      localStorage.setItem("pj_jwt_token", token);
+    } catch {}
+  }
+
+  const userId = user.id || user._id || uid("u");
+  const profileId = profile?.id || profile?._id || user.profileId;
+
+  setState((st) => {
+    const accounts = [...st.accounts];
+    const existingIndex = accounts.findIndex(
+      (a) => a.id === userId || a.email.toLowerCase() === user.email.toLowerCase(),
+    );
+
+    const account: Account = {
+      id: userId,
+      name: user.name,
+      email: user.email.toLowerCase(),
+      mobile: user.mobile || "",
+      password: "",
+      gender: user.gender || "male",
+      dob: user.dob || "",
+      createdBy: user.createdBy || "Self",
+      role: user.role || "member",
+      membership:
+        typeof user.membership === "object"
+          ? (user.membership?.tier as MembershipTier) || "free"
+          : (user.membership as MembershipTier) || "free",
+      status: user.status || "active",
+      profileId: profileId ? String(profileId) : undefined,
+      createdAt: user.createdAt || now(),
+    };
+
+    if (existingIndex >= 0) {
+      accounts[existingIndex] = { ...accounts[existingIndex], ...account };
+    } else {
+      accounts.push(account);
+    }
+
+    const profiles = [...st.profiles];
+    if (profile) {
+      const pId = String(profile.id || profile._id || uid("p"));
+      const existingPIndex = profiles.findIndex((p) => p.id === pId || p.ownerId === userId);
+      const newProfile: Profile = {
+        id: pId,
+        ownerId: userId,
+        name: profile.name || user.name,
+        gender: (profile.gender as Gender) || user.gender || "male",
+        dob: profile.dob || user.dob || "1996-01-01",
+        heightCm: Number(profile.heightCm) || 165,
+        maritalStatus: profile.maritalStatus || "Never Married",
+        religion: profile.religion || "Hindu",
+        community: profile.community || "",
+        motherTongue: profile.motherTongue || "Hindi",
+        city: profile.city || "Mumbai",
+        qualification: profile.qualification || "B.Tech",
+        college: profile.college || "",
+        occupation: profile.occupation || "Software Professional",
+        company: profile.company || "",
+        income: profile.income || "15-20 Lakhs",
+        familyType: profile.familyType || "Nuclear",
+        familyValues: profile.familyValues || "Moderate",
+        fatherOccupation: profile.fatherOccupation || "",
+        motherOccupation: profile.motherOccupation || "",
+        siblings: profile.siblings || "",
+        diet: profile.diet || "Vegetarian",
+        smoking: profile.smoking || "No",
+        drinking: profile.drinking || "No",
+        hobbies: profile.hobbies || [],
+        about: profile.about || "",
+        prefs: profile.prefs || {
+          ageMin: 21,
+          ageMax: 35,
+          heightMin: 150,
+          heightMax: 190,
+          religions: [],
+          locations: [],
+          education: "",
+          occupation: "",
+          maritalStatus: ["Never Married"],
+        },
+        tone: profile.tone || 1,
+        status: profile.status || "approved",
+        verified: profile.verified ?? true,
+        createdBy: (profile.createdBy as CreatedBy) || user.createdBy || "Self",
+        createdAt: profile.createdAt || now(),
+      };
+
+      if (existingPIndex >= 0) {
+        profiles[existingPIndex] = { ...profiles[existingPIndex], ...newProfile };
+      } else {
+        profiles.push(newProfile);
+      }
+    }
+
+    return {
+      ...st,
+      accounts,
+      profiles,
+      session: { accountId: userId },
+    };
+  });
 }
 
 export interface RegisterInput {

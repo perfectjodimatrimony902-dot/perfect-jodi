@@ -20,9 +20,9 @@ export default function MembershipPage() {
         subtitle="Start free and upgrade whenever you're ready."
       >
         {account?.role === "member" && (
-          <p className="mt-4 flex items-center gap-2 text-sm">
-            Your current plan: <MembershipBadge tier={account.membership} />
-          </p>
+          <div className="mt-4 flex items-center gap-2 text-sm">
+            <span>Your current plan:</span> <MembershipBadge tier={account.membership} />
+          </div>
         )}
       </PageHero>
       <section className="container-page py-14">
