@@ -4,10 +4,10 @@ import { Link } from "@/lib/navigation";
 import { ArrowRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import slidePalace from "@/assets/slide-palace.jpg";
-import slideMandap from "@/assets/slide-mandap.jpg";
-import slideFamilies from "@/assets/slide-families.jpg";
-import slideHands from "@/assets/slide-hands.jpg";
+const slidePalace = "/slides/slide-palace.jpg";
+const slideMandap = "/slides/slide-mandap.jpg";
+const slideFamilies = "/slides/slide-families.jpg";
+const slideHands = "/slides/slide-hands.jpg";
 
 interface HeroSliderProps {
   stats: {
@@ -95,7 +95,7 @@ export function HeroSlider({ stats }: HeroSliderProps) {
           {SLIDES.map((slide) => (
             <div key={slide.id} className="relative h-full w-full shrink-0">
               <img
-                src={typeof slide.image === "string" ? slide.image : slide.image.src}
+                src={slide.image}
                 alt={slide.alt}
                 className="h-full w-full object-cover object-center"
               />

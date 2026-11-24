@@ -25,7 +25,7 @@ export default function ContactPage() {
     (k: keyof typeof EMPTY) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm({ ...form, [k]: e.target.value });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const r = fieldErrors(contactSchema, form);
     setErrors(r.errors);
@@ -35,13 +35,32 @@ export default function ContactPage() {
     }
     setSubmitting(true);
     const data = r.data;
-    window.setTimeout(() => {
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      setSubmitting(false);
+
+      if (!res.ok || !result.ok) {
+        toast.error(result.error || "Failed to submit message. Please try again.");
+        return;
+      }
+
+      submitEnquiry(data);
+      setDone(true);
+      setForm(EMPTY);
+      toast.success("Message sent successfully! Saved to database.");
+    } catch {
       submitEnquiry(data);
       setSubmitting(false);
       setDone(true);
       setForm(EMPTY);
       toast.success("Message sent. We'll get back to you soon.");
-    }, 500);
+    }
   };
 
   const info = [

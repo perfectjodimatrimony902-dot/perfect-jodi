@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@/lib/navigation";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -13,7 +13,7 @@ export default function NotFound() {
         </p>
         <div className="mt-6">
           <Link
-            to="/"
+            href="/"
             className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
           >
             Return to Homepage

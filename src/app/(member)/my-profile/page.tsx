@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/lib/navigation";
-import { ArrowLeft, ArrowRight, Check, Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Eye, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -90,13 +90,34 @@ function validate(step: number, d: Draft): Errors {
 }
 
 function ProfileWizard() {
-  const { profile } = useSession();
+  const { account, profile } = useSession();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft | null>(profile ?? null);
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
 
-  if (!profile || !draft) return null;
+  if (!profile) {
+    return (
+      <div className="surface mx-auto max-w-xl space-y-4 p-8 text-center">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-primary/10 p-4 text-primary">
+            <User className="h-8 w-8" />
+          </div>
+        </div>
+        <h2 className="font-display text-2xl font-bold">No Profile Created Yet</h2>
+        <p className="text-sm text-muted-foreground">
+          Welcome, {account?.name || "Member"}! Create your matrimony profile to start exploring and receiving matches.
+        </p>
+        <div className="pt-2">
+          <Button asChild size="lg">
+            <Link to="/create-profile">Create Profile Now</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!draft) return null;
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft({ ...draft, [k]: v });
   const setPref = <K extends keyof Draft["prefs"]>(k: K, v: Draft["prefs"][K]) =>

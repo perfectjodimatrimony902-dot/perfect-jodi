@@ -61,7 +61,85 @@ function Dashboard() {
     return { received, sent, shortlist, views, notifications, recs, newMatches, recent };
   }, [state, account, profile, byId]);
 
-  if (!profile || !account || !data) return null;
+  if (!account) return null;
+
+  if (!profile || !data) {
+    return (
+      <div className="space-y-8">
+        <section className="surface overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-card to-gold/10 p-6 md:p-10 shadow-sm">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold">
+                <Sparkles className="h-3.5 w-3.5" /> Next Step: Complete Profile
+              </span>
+              <h1 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
+                Welcome, {account.name}! Let's create your profile.
+              </h1>
+              <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+                Your account is active. To unlock personalized matches, send interests, and connect with prospective life partners, create your matrimonial profile now.
+              </p>
+            </div>
+            <Button
+              asChild
+              size="lg"
+              className="shrink-0 bg-primary px-6 text-primary-foreground shadow hover:bg-primary/90"
+            >
+              <Link to="/create-profile" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-gold" /> Create Profile Now
+              </Link>
+            </Button>
+          </div>
+        </section>
+
+        <div className="grid gap-5 md:grid-cols-3">
+          <div className="surface flex flex-col justify-between p-6">
+            <div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold">1</div>
+              <h3 className="mt-4 font-semibold text-foreground">Personal & Education</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Fill in your education, career, location, height, religion, and community.
+              </p>
+            </div>
+            <span className="mt-4 text-xs font-medium text-gold">Step 1 & 2</span>
+          </div>
+
+          <div className="surface flex flex-col justify-between p-6">
+            <div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold">2</div>
+              <h3 className="mt-4 font-semibold text-foreground">Family & Lifestyle</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Share family values, background, dietary preferences, and personal hobbies.
+              </p>
+            </div>
+            <span className="mt-4 text-xs font-medium text-gold">Step 3 & 4</span>
+          </div>
+
+          <div className="surface flex flex-col justify-between p-6">
+            <div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold">3</div>
+              <h3 className="mt-4 font-semibold text-foreground">Partner Preferences</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Specify preferred age, height, education, and location to find best matches.
+              </p>
+            </div>
+            <span className="mt-4 text-xs font-medium text-gold">Step 5 & 6</span>
+          </div>
+        </div>
+
+        <div className="surface flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
+          <div>
+            <h3 className="font-semibold text-foreground">Want to look around first?</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Browse approved matrimonial profiles across Indian communities.
+            </p>
+          </div>
+          <Button asChild variant="outline">
+            <Link to="/profiles">Browse Profiles</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
   const completion = profileCompletion(profile);
   const pendingReceived = data.received.filter((i) => i.status === "pending");
 
