@@ -58,7 +58,6 @@ export default function HomePage() {
   const { state, profile: myProfile, account } = useSession();
   const myProfileId = myProfile?.id || account?.profileId;
   const myAccountId = account?.id;
-  const state = useDemoState();
   const [activeTab, setActiveTab] = useState<MatchTab>("featured");
 
   const approved = useMemo(
