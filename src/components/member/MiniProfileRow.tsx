@@ -21,6 +21,7 @@ export function MiniProfileRow({
         <ProfileAvatar
           name={profile.name}
           tone={profile.tone}
+          photoUrl={profile.photoUrl}
           size="sm"
           className="ring-1 ring-offset-1"
         />

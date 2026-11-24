@@ -101,6 +101,7 @@ function MessagesPage() {
                   <ProfileAvatar
                     name={t.other.name}
                     tone={t.other.tone}
+                    photoUrl={t.other.photoUrl}
                     size="sm"
                     className="ring-1 ring-offset-1"
                   />
@@ -129,6 +130,7 @@ function MessagesPage() {
                   <ProfileAvatar
                     name={active.other.name}
                     tone={active.other.tone}
+                    photoUrl={active.other.photoUrl}
                     size="sm"
                     className="ring-1 ring-offset-1"
                   />

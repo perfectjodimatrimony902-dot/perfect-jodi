@@ -176,6 +176,7 @@ function Dashboard() {
         <ProfileAvatar
           name={profile.name}
           tone={profile.tone}
+          photoUrl={profile.photoUrl}
           size="lg"
           className="ring-offset-primary"
         />

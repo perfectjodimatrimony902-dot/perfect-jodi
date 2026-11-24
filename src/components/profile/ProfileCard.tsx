@@ -68,7 +68,7 @@ export function ProfileCard({
         )}
       >
         <div className="transition-transform duration-300 group-hover:scale-105">
-          <ProfileAvatar name={profile.name} tone={profile.tone} size="lg" />
+          <ProfileAvatar name={profile.name} tone={profile.tone} size="lg" photoUrl={profile.photoUrl} />
         </div>
 
         {typeof compat === "number" && (

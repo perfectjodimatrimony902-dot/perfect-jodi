@@ -32,16 +32,25 @@ import { PlanCards } from "@/components/site/PlanCards";
 import { SectionHeading } from "@/components/site/PageHero";
 import { FAQS, HOW_IT_WORKS } from "@/data/content";
 import { formatDate } from "@/hooks/use-demo";
-import { useDemoState } from "@/lib/store";
+import { useSession } from "@/hooks/use-demo";
 import { Link } from "@/lib/navigation";
 
 const HOW_IT_WORKS_ICONS = [UserPlus, Search, MessageCircle, Heart];
 
 export default function HomePage() {
-  const state = useDemoState();
+  const { state, profile: myProfile, account } = useSession();
+  const myProfileId = myProfile?.id || account?.profileId;
+  const myAccountId = account?.id;
+
   const approved = useMemo(
-    () => state.profiles.filter((p) => p.status === "approved"),
-    [state.profiles],
+    () =>
+      state.profiles.filter((p) => {
+        if (p.status !== "approved") return false;
+        if (myProfileId && p.id === myProfileId) return false;
+        if (myAccountId && p.ownerId === myAccountId) return false;
+        return true;
+      }),
+    [state.profiles, myProfileId, myAccountId],
   );
   const featured = useMemo(() => {
     const paid = new Set(state.accounts.filter((a) => a.membership !== "free").map((a) => a.id));

@@ -13,6 +13,7 @@ import {
   MessageCircle,
   Pencil,
   Send,
+  Sparkles,
   UserX,
   Undo2,
 } from "lucide-react";
@@ -39,6 +40,7 @@ import {
   ProfileStatusBadge,
   VerifiedBadge,
 } from "@/components/common/StatusBadge";
+import { MatchCompatibilityDialog } from "@/components/profile/MatchCompatibilityDialog";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { formatDate, useSession } from "@/hooks/use-demo";
 import {
@@ -85,6 +87,7 @@ export default function ProfileDetailPage() {
   const { state, account, profile: me } = useSession();
   const profile = state.profiles.find((p) => p.id === id);
   const [reportOpen, setReportOpen] = useState(false);
+  const [matchDialogOpen, setMatchDialogOpen] = useState(false);
   const [reason, setReason] = useState<string>(REPORT_REASONS[0] ?? "Other");
   const [details, setDetails] = useState("");
 
@@ -194,7 +197,7 @@ export default function ProfileDetailPage() {
             <span className="text-foreground">{profile.name}</span>
           </nav>
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            <ProfileAvatar name={profile.name} tone={profile.tone} size="xl" />
+            <ProfileAvatar name={profile.name} tone={profile.tone} size="xl" photoUrl={profile.photoUrl} />
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-4xl text-primary md:text-5xl">{profile.name}</h1>
@@ -263,6 +266,15 @@ export default function ProfileDetailPage() {
                       </>
                     )}
                   </Button>
+                  {compat && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setMatchDialogOpen(true)}
+                      className="border-gold/50 text-foreground hover:bg-gold/10"
+                    >
+                      <Sparkles className="h-4 w-4 mr-1.5 text-gold" /> Match Kundali & Compare
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -300,19 +312,50 @@ export default function ProfileDetailPage() {
             rows={[
               ["Age", `${ageFromDob(profile.dob)} years`],
               ["Height", formatHeight(profile.heightCm)],
+              ["Weight", profile.weightKg ? `${profile.weightKg} kg` : undefined],
               ["Marital status", profile.maritalStatus],
               ["Religion", profile.religion],
               ["Community", profile.community],
               ["Mother tongue", profile.motherTongue],
               ["Lives in", profile.city],
+              ["Languages known", profile.languages?.length ? profile.languages.join(", ") : undefined],
+              ["Physical disability", profile.disability && profile.disability !== "None" ? profile.disability : "None"],
+            ]}
+          />
+          <Section
+            title="Religious & horoscope details"
+            rows={[
+              ["Religion", profile.religion],
+              ["Community / Caste", profile.community],
+              ["Sub-caste", profile.subCaste],
+              ["Gotra", profile.gotra],
+              ["Manglik status", profile.manglik],
+              ["Rashi (Moon sign)", profile.rashi],
+              ["Nakshatra", profile.nakshatra],
+              ["Time of birth", profile.birthTime],
+              ["Place of birth", profile.birthPlace],
+            ]}
+          />
+          <Section
+            title="Location & relocation"
+            rows={[
+              ["Current city", profile.city],
+              ["State", profile.state],
+              ["Country", profile.country || "India"],
+              ["Native place / Hometown", profile.nativePlace],
+              ["Willingness to relocate", profile.willingToRelocate],
             ]}
           />
           <Section
             title="Education & career"
             rows={[
+              ["Education level", profile.educationLevel],
               ["Highest qualification", profile.qualification],
+              ["Field of study", profile.educationField],
               ["College / University", profile.college],
+              ["Employment type", profile.employmentType],
               ["Occupation", profile.occupation],
+              ["Designation / Role", profile.designation],
               ["Company / Organisation", profile.company],
               ["Annual income", profile.income],
             ]}
@@ -322,18 +365,25 @@ export default function ProfileDetailPage() {
             rows={[
               ["Family type", profile.familyType],
               ["Family values", profile.familyValues],
+              ["Family status", profile.familyStatus],
               ["Father's occupation", profile.fatherOccupation],
               ["Mother's occupation", profile.motherOccupation],
-              ["Siblings", profile.siblings],
+              ["Brothers", profile.brothersCount !== undefined ? String(profile.brothersCount) : undefined],
+              ["Sisters", profile.sistersCount !== undefined ? String(profile.sistersCount) : undefined],
+              ["Siblings overview", profile.siblings],
+              ["About family", profile.aboutFamily],
             ]}
           />
           <Section
-            title="Lifestyle"
+            title="Lifestyle & marriage expectations"
             rows={[
               ["Diet", profile.diet],
               ["Smoking", profile.smoking],
               ["Drinking", profile.drinking],
-              ["Hobbies", profile.hobbies.join(", ")],
+              ["Hobbies", profile.hobbies?.join(", ")],
+              ["Marriage timeline", profile.marriageTimeline],
+              ["Living arrangement", profile.livingArrangement],
+              ["Preference on children", profile.childrenPreference],
             ]}
           />
           <Section
@@ -373,10 +423,16 @@ export default function ProfileDetailPage() {
                 ))}
               </ul>
               <p className="mt-4 flex gap-2 rounded-md bg-muted p-3 text-xs text-muted-foreground">
-                <Info className="h-4 w-4 shrink-0" /> Demo estimate based on how many of your
-                partner preferences this profile meets. It is not a scientific compatibility
-                assessment.
+                <Info className="h-4 w-4 shrink-0" /> Real-time 2-way compatibility based on your partner preferences, background, and Vedic Kundali Milan.
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMatchDialogOpen(true)}
+                className="mt-3 w-full border-gold/40 text-xs text-foreground hover:bg-gold/10"
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1 text-gold" /> View 36 Gunas & Detailed Match
+              </Button>
             </section>
           )}
           <section className="surface p-6">
@@ -451,6 +507,18 @@ export default function ProfileDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {compat && me && (
+        <MatchCompatibilityDialog
+          open={matchDialogOpen}
+          onOpenChange={setMatchDialogOpen}
+          me={me}
+          other={profile}
+          compat={compat}
+          onSendInterest={onInterest}
+          interestSent={sentByMe}
+        />
+      )}
     </div>
   );
 }
