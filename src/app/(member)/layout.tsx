@@ -1,10 +1,7 @@
 "use client";
 
-
 import { AuthGate } from "@/components/common/AuthGate";
 import { MemberNav } from "@/components/member/MemberNav";
-
-
 
 export default function MemberLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,9 +10,7 @@ export default function MemberLayout({ children }: { children: React.ReactNode }
         <aside className="lg:sticky lg:top-20 lg:self-start">
           <MemberNav />
         </aside>
-        <div className="min-w-0">
-          {children}
-        </div>
+        <div className="min-w-0">{children}</div>
       </div>
     </AuthGate>
   );

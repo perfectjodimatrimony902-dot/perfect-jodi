@@ -71,7 +71,7 @@ export function HeroSearch({ className = "" }: { className?: string }) {
               <Sparkles className="h-5 w-5 text-gold animate-pulse" />
             </div>
             <div>
-              <h2 className="text-2xl font-display font-semibold tracking-tight text-primary flex items-center gap-2">
+              <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2">
                 Begin Your Partner Search
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground">

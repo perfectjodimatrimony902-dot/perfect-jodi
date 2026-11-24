@@ -28,6 +28,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "./Logo";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
+import { getProfilePhoto } from "@/data/profile-photos";
 import { useSession } from "@/hooks/use-demo";
 import { logout } from "@/lib/actions";
 
@@ -65,8 +66,8 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
-      <div className="container-page flex h-16 items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md transition-all shadow-xs">
+      <div className="container-page flex h-[84px] items-center justify-between gap-4">
         <Logo />
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {PUBLIC_NAV.map((l) => (
@@ -106,6 +107,9 @@ export function SiteHeader() {
                   <button className="hidden cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-muted sm:flex">
                     <ProfileAvatar
                       name={account.name}
+                      imageUrl={
+                        profile?.photoUrl || (profile ? getProfilePhoto(profile) : undefined)
+                      }
                       tone={profile?.tone ?? 5}
                       size="sm"
                       className="h-8 w-8 text-xs ring-1 ring-offset-1"
@@ -145,12 +149,22 @@ export function SiteHeader() {
               </DropdownMenu>
             </>
           ) : (
-            <div className="hidden items-center gap-2 sm:flex">
-              <Button asChild variant="ghost">
+            <div className="hidden items-center gap-2.5 sm:flex">
+              <Button
+                asChild
+                variant="ghost"
+                size="default"
+                className="font-semibold text-foreground/85 hover:text-primary rounded-xl px-4"
+              >
                 <Link to="/login">Log in</Link>
               </Button>
-              <Button asChild>
-                <Link to="/register">Register free</Link>
+              <Button
+                asChild
+                variant="gold"
+                size="default"
+                className="rounded-xl font-bold shadow-xs px-5 text-stone-950"
+              >
+                <Link to="/register">Register Free</Link>
               </Button>
             </div>
           )}
@@ -162,9 +176,7 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-80 overflow-y-auto bg-background">
               <SheetHeader>
-                <SheetTitle className="text-left font-display text-2xl text-primary">
-                  Menu
-                </SheetTitle>
+                <SheetTitle className="text-left text-2xl font-bold text-primary">Menu</SheetTitle>
               </SheetHeader>
               <nav className="mt-2 flex flex-col px-4" aria-label="Mobile">
                 <Link to="/" onClick={() => setOpen(false)} className="border-b py-3 font-medium">

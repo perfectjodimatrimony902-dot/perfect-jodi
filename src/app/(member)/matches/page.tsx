@@ -11,8 +11,6 @@ import { ProfileCard } from "@/components/profile/ProfileCard";
 import { useSession } from "@/hooks/use-demo";
 import { recommendedMatches } from "@/lib/matching";
 
-
-
 export default function MatchesPage() {
   const { state, profile } = useSession();
   const [min, setMin] = useState("0");
@@ -79,5 +77,3 @@ export default function MatchesPage() {
     </div>
   );
 }
-
-

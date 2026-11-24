@@ -1,7 +1,8 @@
 import { BRAND, DEMO_ADMIN, DEMO_MEMBER } from "@/config/brand";
+import { getProfileGallery, getProfilePhoto, STORY_PHOTOS } from "./profile-photos";
 import type { Account, DemoState, Gender, PartnerPrefs, Profile } from "@/lib/types";
 
-export const STATE_VERSION = 1;
+export const STATE_VERSION = 2;
 
 type Seed = Omit<Profile, "ownerId" | "prefs" | "status" | "verified" | "createdBy" | "tone"> &
   Partial<Pick<Profile, "status" | "verified" | "createdBy" | "tone">> & {
@@ -777,6 +778,8 @@ export function createSeed(): DemoState {
     return {
       ...rest,
       ownerId,
+      photoUrl: getProfilePhoto(s.id),
+      photos: getProfileGallery(s.id),
       prefs: { ...base, ...prefs },
       status: s.status ?? "approved",
       verified: s.verified ?? s.status !== "pending",
@@ -917,6 +920,7 @@ export function createSeed(): DemoState {
         city: "Pune",
         marriedOn: "2026-02-14",
         published: true,
+        photoUrl: STORY_PHOTOS.s1,
         story:
           "Our parents created our profiles within a week of each other. One interest, three family video calls and a lot of laughter later, we knew. We married in a small ceremony by the river.",
       },
@@ -926,6 +930,7 @@ export function createSeed(): DemoState {
         city: "Hyderabad",
         marriedOn: "2025-12-05",
         published: true,
+        photoUrl: STORY_PHOTOS.s2,
         story:
           "We matched on our love for old Hindi songs and biryani. Our families met over chai and the rest is a beautiful story we are still writing.",
       },
@@ -935,6 +940,7 @@ export function createSeed(): DemoState {
         city: "Chennai",
         marriedOn: "2026-05-20",
         published: true,
+        photoUrl: STORY_PHOTOS.s3,
         story:
           "Divya's detailed partner preferences made me smile — I matched every one except 'must love mornings'. She has forgiven me for that.",
       },
@@ -944,6 +950,7 @@ export function createSeed(): DemoState {
         city: "Chandigarh",
         marriedOn: "2026-03-11",
         published: true,
+        photoUrl: STORY_PHOTOS.s4,
         story:
           "Both families wanted someone grounded and kind. The shortlist feature helped my mother keep track — Jaspreet was the first on it.",
       },
@@ -953,6 +960,7 @@ export function createSeed(): DemoState {
         city: "Kochi",
         marriedOn: "2026-08-30",
         published: true,
+        photoUrl: STORY_PHOTOS.s5,
         story:
           "A second chance at love for both of us. We are grateful for a space that treated our story with respect.",
       },
@@ -962,6 +970,7 @@ export function createSeed(): DemoState {
         city: "Jaipur",
         marriedOn: "2026-10-02",
         published: false,
+        photoUrl: STORY_PHOTOS.s6,
         story:
           "We met through the platform in January and married in October. Thank you for making it so easy for our families.",
       },

@@ -27,7 +27,8 @@ export function SiteFooter() {
               A Journey Towards Forever <span className="text-red-500">❤️</span>
             </p>
             <p className="mt-2 text-xs md:text-sm leading-relaxed text-white/80 max-w-sm drop-shadow">
-              Connecting verified brides, grooms, and families with shared traditions, values, and trust.
+              Connecting verified brides, grooms, and families with shared traditions, values, and
+              trust.
             </p>
           </div>
           <div>
@@ -41,12 +42,20 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link to="/profiles" search={{ lookingFor: "bride" }} className="hover:text-gold transition-colors">
+                <Link
+                  to="/profiles"
+                  search={{ lookingFor: "bride" }}
+                  className="hover:text-gold transition-colors"
+                >
                   Brides
                 </Link>
               </li>
               <li>
-                <Link to="/profiles" search={{ lookingFor: "groom" }} className="hover:text-gold transition-colors">
+                <Link
+                  to="/profiles"
+                  search={{ lookingFor: "groom" }}
+                  className="hover:text-gold transition-colors"
+                >
                   Grooms
                 </Link>
               </li>

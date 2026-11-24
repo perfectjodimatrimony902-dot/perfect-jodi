@@ -13,8 +13,6 @@ import { login, logout } from "@/lib/actions";
 import { emailSchema, fieldErrors } from "@/lib/validation";
 import { z } from "zod";
 
-
-
 const schema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Password is required"),

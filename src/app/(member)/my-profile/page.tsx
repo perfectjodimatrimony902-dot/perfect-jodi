@@ -14,6 +14,7 @@ import { NativeSelect } from "@/components/common/NativeSelect";
 import { ProfileStatusBadge } from "@/components/common/StatusBadge";
 import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { AVATAR_TONE_CLASSES, ProfileAvatar } from "@/components/profile/ProfileAvatar";
+import { getProfilePhoto } from "@/data/profile-photos";
 import { useSession } from "@/hooks/use-demo";
 import { saveMyProfile } from "@/lib/actions";
 import { profileCompletion, shortHeight } from "@/lib/matching";
@@ -36,8 +37,6 @@ import {
 } from "@/lib/options";
 import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-
 
 const STEPS = [
   "Personal",
@@ -401,7 +400,12 @@ function ProfileWizard() {
         )}
         {step === 5 && (
           <div className="flex flex-col items-center gap-6 text-center">
-            <ProfileAvatar name={draft.name} tone={draft.tone} size="xl" />
+            <ProfileAvatar
+              name={draft.name}
+              imageUrl={draft.photoUrl || getProfilePhoto(draft)}
+              tone={draft.tone}
+              size="xl"
+            />
             <div>
               <h2 className="text-2xl">Your profile picture</h2>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">

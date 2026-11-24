@@ -10,8 +10,6 @@ import { ProfileCard } from "@/components/profile/ProfileCard";
 import { useSession } from "@/hooks/use-demo";
 import { toggleShortlist } from "@/lib/actions";
 
-
-
 export default function ShortlistPage() {
   const { state, account } = useSession();
   const ids = account ? (state.shortlists[account.id] ?? []) : [];

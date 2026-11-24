@@ -2,6 +2,21 @@ import { BadgeCheck, Quote, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TESTIMONIALS } from "@/data/content";
 
+const TESTIMONIAL_AVATARS: Record<string, string> = {
+  "Lakshmi R.":
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+  "Harsh V.":
+    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80",
+  "Nazia S.":
+    "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=200&q=80",
+  "Priya & Rohan":
+    "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=200&q=80",
+  "Aditya M.":
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+  "Sunita & Rajesh A.":
+    "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=200&q=80",
+};
+
 export function TestimonialSlider() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -184,16 +199,26 @@ export function TestimonialSlider() {
                   ) : null}
 
                   {/* Testimonial Quote */}
-                  <blockquote className="mt-1 font-display text-base sm:text-lg leading-relaxed text-foreground/90 italic">
+                  <blockquote className="mt-1 text-base sm:text-lg leading-relaxed text-foreground/90 font-normal">
                     “{t.quote}”
                   </blockquote>
                 </div>
 
                 {/* Reviewer Bio */}
                 <figcaption className="mt-6 pt-5 border-t border-border/60 flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-amber-900 text-white font-display text-base font-bold shadow-sm ring-2 ring-gold/40">
-                    {initials}
-                  </div>
+                  {TESTIMONIAL_AVATARS[t.name] ? (
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-gold/50 shadow-md">
+                      <img
+                        src={TESTIMONIAL_AVATARS[t.name]}
+                        alt={t.name}
+                        className="h-full w-full object-cover object-center"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-amber-900 text-white text-base font-bold shadow-sm ring-2 ring-gold/40">
+                      {initials}
+                    </div>
+                  )}
                   <div>
                     <p className="font-semibold text-foreground text-sm leading-tight">{t.name}</p>
                     <p className="text-xs text-muted-foreground mt-0.5 font-medium">{t.role}</p>
