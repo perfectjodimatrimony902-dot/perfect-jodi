@@ -452,6 +452,17 @@ export default function ProfileDetailPage() {
                         <Share2 className="h-4 w-4 text-gold" /> Share Biodata
                       </Button>
 
+                      {compat && (
+                        <Button
+                          variant="outline"
+                          size="xl"
+                          onClick={() => setMatchDialogOpen(true)}
+                          className="rounded-2xl border-gold/50 text-foreground hover:bg-gold/10 font-semibold cursor-pointer gap-1.5"
+                        >
+                          <Sparkles className="h-4 w-4 text-gold" /> Match Kundali & Compare
+                        </Button>
+                      )}
+
                       <Button
                         variant="ghost"
                         size="sm"
@@ -466,40 +477,6 @@ export default function ProfileDetailPage() {
                       </Button>
                     </>
                   )}
-                  <Button variant={shortlisted ? "soft" : "outline"} onClick={onShortlist}>
-                    {shortlisted ? (
-                      <>
-                        <HeartOff className="h-4 w-4" /> Remove shortlist
-                      </>
-                    ) : (
-                      <>
-                        <Heart className="h-4 w-4" /> Shortlist
-                      </>
-                    )}
-                  </Button>
-                  {compat && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setMatchDialogOpen(true)}
-                      className="border-gold/50 text-foreground hover:bg-gold/10"
-                    >
-                      <Sparkles className="h-4 w-4 mr-1.5 text-gold" /> Match Kundali & Compare
-                    </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground"
-                    onClick={() =>
-                      account
-                        ? setReportOpen(true)
-                        : requireLogin("Please log in to report a profile.")
-                    }
-                  >
-                    <Flag className="h-3.5 w-3.5" /> Report profile
-                  </Button>
-                </>
-              )}
                 </div>
               </div>
             </div>
