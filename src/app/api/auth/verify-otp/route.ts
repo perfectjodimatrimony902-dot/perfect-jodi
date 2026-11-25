@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { Otp } from "@/models/Otp";
 import { signJwt } from "@/lib/jwt";
+import { sendWelcomeEmail } from "@/lib/mailer";
 
 export async function POST(req: Request) {
   try {
@@ -114,7 +115,21 @@ export async function POST(req: Request) {
     user.isVerified = true;
     await user.save();
 
-    // 7. Issue JWT authentication token
+    // 7. Deliver greeting and account confirmation email to user's registered inbox
+    try {
+      await sendWelcomeEmail({
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+        gender: user.gender,
+        createdBy: user.createdBy,
+        createdAt: user.createdAt,
+      });
+    } catch (welcomeError: unknown) {
+      console.error("Welcome email delivery notice:", welcomeError);
+    }
+
+    // 8. Issue JWT authentication token
     const tokenPayload = {
       userId: user._id.toString(),
       email: user.email,
