@@ -10,6 +10,7 @@ export interface IUser extends Document {
   createdBy: "Self" | "Parent" | "Sibling" | "Relative";
   role: "member" | "admin";
   status: "active" | "suspended";
+  isVerified: boolean;
   membership: {
     tier: "free" | "gold" | "premium";
     validUntil?: string;
@@ -41,6 +42,7 @@ const UserSchema = new Schema<IUser>(
     },
     role: { type: String, enum: ["member", "admin"], default: "member" },
     status: { type: String, enum: ["active", "suspended"], default: "active" },
+    isVerified: { type: Boolean, default: false },
     membership: {
       tier: { type: String, enum: ["free", "gold", "premium"], default: "free" },
       validUntil: { type: String },

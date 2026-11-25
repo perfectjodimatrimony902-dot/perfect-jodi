@@ -89,6 +89,19 @@ export async function POST(req: Request) {
       );
     }
 
+    // Require email verification before allowing login
+    if (user.isVerified === false && user.role !== "admin") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Your email address is not verified yet. Please verify your email to log in.",
+          needsVerification: true,
+          email: user.email,
+        },
+        { status: 403 },
+      );
+    }
+
     // Check associated profile
     let profile = null;
     if (user.profileId) {
@@ -124,6 +137,7 @@ export async function POST(req: Request) {
       dob: user.dob,
       createdBy: user.createdBy,
       role: user.role,
+      isVerified: user.isVerified ?? true,
       membership: user.membership,
       hasProfile,
       profileId: profile?._id?.toString(),
