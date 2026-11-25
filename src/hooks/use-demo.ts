@@ -7,8 +7,12 @@ export function useSession() {
     const account = state.session
       ? state.accounts.find((a) => a.id === state.session!.accountId)
       : undefined;
-    const profile = account?.profileId
-      ? state.profiles.find((p) => p.id === account.profileId)
+    const profile = account
+      ? state.profiles.find(
+        (p) =>
+          (account.profileId && p.id === account.profileId) ||
+          p.ownerId === account.id,
+      )
       : undefined;
     return { state, account, profile };
   }, [state]);

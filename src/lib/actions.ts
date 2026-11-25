@@ -257,6 +257,35 @@ export function syncMongoSession(
   });
 }
 
+/** Fetches all live approved profiles from MongoDB Atlas and merges into client state */
+export async function syncAllProfilesFromDb(): Promise<Profile[]> {
+  try {
+    const res = await fetch("/api/profiles", { cache: "no-store" });
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.profiles) && data.profiles.length > 0) {
+      const isMongoId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
+      setState((st) => {
+        const atlasMap = new Map<string, Profile>(data.profiles.map((p: Profile) => [p.id, p]));
+        const atlasOwnerIds = new Set(data.profiles.map((p: Profile) => p.ownerId));
+
+        // Preserve mock seed profiles that do not collide with MongoDB Atlas profiles
+        const nonAtlasProfiles = st.profiles.filter(
+          (p) => !atlasMap.has(p.id) && !atlasOwnerIds.has(p.ownerId) && !isMongoId(p.id),
+        );
+
+        return {
+          ...st,
+          profiles: [...data.profiles, ...nonAtlasProfiles],
+        };
+      });
+      return data.profiles;
+    }
+  } catch (err) {
+    console.error("Failed to sync live profiles from database:", err);
+  }
+  return [];
+}
+
 export interface RegisterInput {
   name: string;
   gender: Gender;

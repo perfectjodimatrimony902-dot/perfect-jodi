@@ -14,7 +14,7 @@ import {
   Users,
   CheckCircle2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -23,7 +23,7 @@ import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { MatchCompatibilityDialog } from "@/components/profile/MatchCompatibilityDialog";
 import { useSession } from "@/hooks/use-demo";
-import { sendInterest, toggleShortlist } from "@/lib/actions";
+import { sendInterest, toggleShortlist, syncAllProfilesFromDb } from "@/lib/actions";
 import {
   ageFromDob,
   compatibility,
@@ -48,6 +48,19 @@ export default function MatchesPage() {
   const [tab, setTab] = useState<MatchTab>("daily");
   const [minScore, setMinScore] = useState<string>("0");
   const [selectedMatch, setSelectedMatch] = useState<{ profile: Profile; compat: Compatibility } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Sync latest live profiles from MongoDB Atlas on mount
+  useEffect(() => {
+    syncAllProfilesFromDb();
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await syncAllProfilesFromDb();
+    setIsRefreshing(false);
+    toast.success("Matches refreshed with latest live profiles!");
+  };
 
   // Derive matches based on selected real-world tab
   const rawMatches = useMemo(() => {
@@ -117,6 +130,17 @@ export default function MatchesPage() {
         text="Real-time bidirectional 2-way matching based on partner preferences, lifestyle, and Vedic Kundali Milan."
         action={
           <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isRefreshing}
+              onClick={handleRefresh}
+              className="h-9 gap-1.5 text-xs font-medium cursor-pointer"
+            >
+              <RefreshCw className={cn("h-3.5 w-3.5 text-primary", isRefreshing && "animate-spin")} />
+              <span>{isRefreshing ? "Syncing..." : "Sync Live Matches"}</span>
+            </Button>
             <span className="text-xs text-muted-foreground hidden sm:inline">Min Match:</span>
             <div className="w-36">
               <NativeSelect
@@ -252,62 +276,15 @@ export default function MatchesPage() {
         />
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {matches.map(({ profile: p, compat }) => {
-            const interestSent = hasSentInterest(p.id);
-
-            return (
-              <div key={p.id} className="flex flex-col">
-                <ProfileCard
-                  profile={p}
-                  compat={compat.score}
-                  footer={
-                    <div className="mt-4 pt-4 border-t space-y-3">
-                      {/* Highlight Chips */}
-                      <div className="flex flex-wrap gap-1.5 min-h-[48px]">
-                        {compat.highlights.slice(0, 3).map((h) => (
-                          <span
-                            key={h}
-                            className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
-                          >
-                            <CheckCircle2 className="h-3 w-3 text-success shrink-0" />
-                            <span className="truncate max-w-[140px]">{h}</span>
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-2 gap-2 pt-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-xs"
-                          onClick={() => setSelectedMatch({ profile: p, compat })}
-                        >
-                          <Sparkles className="h-3.5 w-3.5 mr-1 text-gold" />
-                          Compare
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          className={cn(
-                            "w-full text-xs",
-                            interestSent
-                              ? "bg-muted text-muted-foreground hover:bg-muted"
-                              : "bg-primary text-primary-foreground hover:bg-primary/90",
-                          )}
-                          disabled={interestSent}
-                          onClick={() => handleSendInterest(p.id)}
-                        >
-                          <Heart className={cn("h-3.5 w-3.5 mr-1", interestSent && "fill-muted-foreground")} />
-                          {interestSent ? "Interest Sent" : "Connect"}
-                        </Button>
-                      </div>
-                    </div>
-                  }
-                />
-              </div>
-            );
-          })}
+          {matches.map(({ profile: p, compat }) => (
+            <ProfileCard
+              key={p.id}
+              profile={p}
+              compat={compat.score}
+              highlights={compat.highlights}
+              onCompare={() => setSelectedMatch({ profile: p, compat })}
+            />
+          ))}
         </div>
       )}
 

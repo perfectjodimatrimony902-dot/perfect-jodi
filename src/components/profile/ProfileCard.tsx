@@ -4,10 +4,10 @@ import { Link, useNavigate } from "@/lib/navigation";
 import {
   BadgeCheck,
   Briefcase,
+  CheckCircle2,
   GraduationCap,
   Heart,
   MapPin,
-  Ruler,
   Send,
   Sparkles,
   UserCheck,
@@ -27,11 +27,15 @@ export function ProfileCard({
   profile,
   layout = "grid",
   compat,
+  highlights,
+  onCompare,
   footer,
 }: {
   profile: Profile;
   layout?: "grid" | "list";
   compat?: number;
+  highlights?: string[];
+  onCompare?: () => void;
   footer?: React.ReactNode;
 }) {
   const { state, account } = useSession();
@@ -46,10 +50,10 @@ export function ProfileCard({
   const existingInterest =
     account && account.profileId
       ? state.interests.find(
-          (i) =>
-            (i.fromProfileId === account.profileId && i.toProfileId === profile.id) ||
-            (i.fromProfileId === profile.id && i.toProfileId === account.profileId),
-        )
+        (i) =>
+          (i.fromProfileId === account.profileId && i.toProfileId === profile.id) ||
+          (i.fromProfileId === profile.id && i.toProfileId === account.profileId),
+      )
       : undefined;
 
   const photoUrl = profile.photoUrl || getProfilePhoto(profile);
@@ -238,50 +242,83 @@ export function ProfileCard({
               “{profile.about}”
             </p>
           )}
+
+          {/* Highlight Chips (e.g. on Matches page) */}
+          {highlights && highlights.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-border/60 flex flex-wrap gap-1.5">
+              {highlights.slice(0, 3).map((h) => (
+                <span
+                  key={h}
+                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary"
+                >
+                  <CheckCircle2 className="h-3 w-3 text-success shrink-0" />
+                  <span className="truncate max-w-[160px]">{h}</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Optional custom footer slot */}
+          {footer && <div className="mt-3 w-full">{footer}</div>}
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-5 pt-3 border-t border-border/60 flex items-center gap-2">
-          {!isMine && (
-            <Button
-              type="button"
-              size="sm"
-              onClick={onSendInterest}
-              disabled={sending || !!existingInterest}
-              className={cn(
-                "flex-1 font-semibold rounded-xl text-xs sm:text-sm shadow-xs cursor-pointer transition-all gap-1.5",
-                existingInterest
-                  ? "bg-secondary text-secondary-foreground hover:bg-secondary border border-border"
-                  : "bg-primary hover:bg-primary/90 text-white shadow-primary/20",
+            <div className="mt-4 pt-3 border-t border-border/60 space-y-2">
+              {onCompare && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCompare();
+                  }}
+                  className="w-full font-semibold rounded-xl text-xs border-gold/40 hover:bg-gold/10 text-primary shadow-2xs cursor-pointer gap-1.5"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-gold" /> Compare Kundali & Match
+                </Button>
               )}
-            >
-              {existingInterest ? (
-                <>
-                  <UserCheck className="h-3.5 w-3.5 text-gold" />
-                  {existingInterest.status === "accepted" ? "Connected" : "Interest Sent"}
-                </>
-              ) : (
-                <>
-                  <Send className="h-3.5 w-3.5" />
-                  Connect
-                </>
-              )}
-            </Button>
-          )}
 
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="flex-1 font-semibold rounded-xl text-xs sm:text-sm border-gold/40 hover:bg-gold/10 text-primary shadow-2xs cursor-pointer"
-          >
-            <Link to="/profiles/$id" params={{ id: profile.id }}>
-              View Profile
-            </Link>
-          </Button>
+              <div className="flex items-center gap-2">
+                {!isMine && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={onSendInterest}
+                    disabled={sending || !!existingInterest}
+                    className={cn(
+                      "flex-1 font-semibold rounded-xl text-xs sm:text-sm shadow-xs cursor-pointer transition-all gap-1.5",
+                      existingInterest
+                        ? "bg-secondary text-secondary-foreground hover:bg-secondary border border-border"
+                        : "bg-primary hover:bg-primary/90 text-white shadow-primary/20",
+                    )}
+                  >
+                    {existingInterest ? (
+                      <>
+                        <UserCheck className="h-3.5 w-3.5 text-gold" />
+                        {existingInterest.status === "accepted" ? "Connected" : "Interest Sent"}
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-3.5 w-3.5" />
+                        Connect
+                      </>
+                    )}
+                  </Button>
+                )}
 
-          {footer}
-        </div>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 font-semibold rounded-xl text-xs sm:text-sm border-gold/40 hover:bg-gold/10 text-primary shadow-2xs cursor-pointer"
+                >
+                  <Link to="/profiles/$id" params={{ id: profile.id }}>
+                    View Profile
+                  </Link>
+                </Button>
+              </div>
+            </div>
       </div>
     </article>
   );

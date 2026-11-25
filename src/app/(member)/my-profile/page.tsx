@@ -17,7 +17,7 @@ import { AVATAR_TONE_CLASSES, ProfileAvatar } from "@/components/profile/Profile
 import { PhotoUploader } from "@/components/profile/PhotoUploader";
 import { getProfilePhoto } from "@/data/profile-photos";
 import { useSession } from "@/hooks/use-demo";
-import { saveMyProfile } from "@/lib/actions";
+import { saveMyProfile, syncAllProfilesFromDb } from "@/lib/actions";
 import { profileCompletion, shortHeight } from "@/lib/matching";
 import {
   AGES,
@@ -201,6 +201,7 @@ function ProfileWizard() {
     }
 
     const r = saveMyProfile(draft, submit);
+    syncAllProfilesFromDb();
     setSaving(false);
     if (!r.ok) return toast.error(r.error);
 
@@ -576,16 +577,10 @@ function ProfileWizard() {
 
         {/* Step 6: Photo & Tone */}
         {step === 6 && (
-          <div className="flex flex-col items-center gap-6 text-center">
-            <ProfileAvatar
-              name={draft.name}
-              imageUrl={draft.photoUrl || getProfilePhoto(draft)}
-              tone={draft.tone}
-              size="xl"
-            />
-            <div>
+          <div className="space-y-6">
+            <div className="text-center sm:text-left">
               <h2 className="text-2xl font-semibold">Profile Photo & Avatar</h2>
-              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Upload your profile photo. Verified photos increase connection rates by 80%.
               </p>
             </div>

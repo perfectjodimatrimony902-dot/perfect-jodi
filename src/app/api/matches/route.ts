@@ -112,13 +112,13 @@ export async function GET(req: Request) {
 
     // Query candidates from MongoDB
     const oppositeGender = myProfile.gender === "male" ? "female" : "male";
-    const candidateDocs = await ProfileModel.find({
+    const candidateDocs: any[] = await ProfileModel.find({
       gender: oppositeGender,
       status: "approved",
       _id: { $ne: myProfileDoc._id },
     }).limit(100);
 
-    const scoredMatches = candidateDocs.map((doc) => {
+    const scoredMatches = candidateDocs.map((doc: any) => {
       const p: Profile = {
         id: doc._id.toString(),
         ownerId: doc.userId.toString(),

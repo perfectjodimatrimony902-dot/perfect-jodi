@@ -64,11 +64,12 @@ export default function HomePage() {
     () =>
       state.profiles.filter((p) => {
         if (p.status !== "approved") return false;
-        if (myProfileId && p.id === myProfileId) return false;
-        if (myAccountId && p.ownerId === myAccountId) return false;
+        if (myProfileId && (p.id === myProfileId || (p as any)._id === myProfileId)) return false;
+        if (myAccountId && (p.ownerId === myAccountId || (p as any).userId === myAccountId)) return false;
+        if (myProfile?.name && p.name === myProfile.name && p.dob === myProfile.dob) return false;
         return true;
       }),
-    [state.profiles, myProfileId, myAccountId],
+    [state.profiles, myProfileId, myAccountId, myProfile?.name, myProfile?.dob],
   );
 
   const featured = useMemo(() => {
