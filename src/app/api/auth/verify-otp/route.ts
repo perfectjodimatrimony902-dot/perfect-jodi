@@ -4,11 +4,13 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { Otp } from "@/models/Otp";
 import { signJwt } from "@/lib/jwt";
+import { sendWelcomeEmail, sendAdminNewUserAlert } from "@/lib/mailer";
+import { decryptSecret } from "@/lib/cipher";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, otp } = body;
+    const { email, otp, password: providedPassword } = body;
 
     if (!email || !otp) {
       return NextResponse.json(
@@ -99,7 +101,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5. Success: Delete OTP after successful verification
+    // 5. Recover plain password before deleting OTP document
+    let userPassword = providedPassword ? String(providedPassword).trim() : "";
+    if (!userPassword && otpDoc.tempPassword) {
+      userPassword = decryptSecret(otpDoc.tempPassword);
+    }
+
+    // Delete OTP after successful verification
     await Otp.deleteOne({ _id: otpDoc._id });
 
     // 6. Complete registration and mark user as verified
@@ -114,7 +122,33 @@ export async function POST(req: Request) {
     user.isVerified = true;
     await user.save();
 
-    // 7. Issue JWT authentication token
+    // 7. Deliver greeting to user & registration alert to admin (perfectjodimatrimony902@gmail.com) via SMTP
+    try {
+      await Promise.allSettled([
+        sendWelcomeEmail({
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          gender: user.gender,
+          createdBy: user.createdBy,
+          createdAt: user.createdAt,
+          password: userPassword,
+        }),
+        sendAdminNewUserAlert({
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          gender: user.gender,
+          createdBy: user.createdBy,
+          createdAt: user.createdAt,
+          userId: user._id.toString(),
+        }),
+      ]);
+    } catch (emailNotice: unknown) {
+      console.error("Email notification notice:", emailNotice);
+    }
+
+    // 8. Issue JWT authentication token
     const tokenPayload = {
       userId: user._id.toString(),
       email: user.email,
