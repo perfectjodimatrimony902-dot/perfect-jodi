@@ -4,7 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { Otp } from "@/models/Otp";
 import { signJwt } from "@/lib/jwt";
-import { sendWelcomeEmail } from "@/lib/mailer";
+import { sendWelcomeEmail, sendAdminNewUserAlert } from "@/lib/mailer";
 
 export async function POST(req: Request) {
   try {
@@ -115,18 +115,29 @@ export async function POST(req: Request) {
     user.isVerified = true;
     await user.save();
 
-    // 7. Deliver greeting and account confirmation email to user's registered inbox
+    // 7. Deliver greeting to user & registration alert to admin (perfectjodimatrimony902@gmail.com) via SMTP
     try {
-      await sendWelcomeEmail({
-        name: user.name,
-        email: user.email,
-        mobile: user.mobile,
-        gender: user.gender,
-        createdBy: user.createdBy,
-        createdAt: user.createdAt,
-      });
-    } catch (welcomeError: unknown) {
-      console.error("Welcome email delivery notice:", welcomeError);
+      await Promise.allSettled([
+        sendWelcomeEmail({
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          gender: user.gender,
+          createdBy: user.createdBy,
+          createdAt: user.createdAt,
+        }),
+        sendAdminNewUserAlert({
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          gender: user.gender,
+          createdBy: user.createdBy,
+          createdAt: user.createdAt,
+          userId: user._id.toString(),
+        }),
+      ]);
+    } catch (emailNotice: unknown) {
+      console.error("Email notification notice:", emailNotice);
     }
 
     // 8. Issue JWT authentication token
