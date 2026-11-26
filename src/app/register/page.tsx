@@ -129,6 +129,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           email: pending.email,
           otp: cleanOtp,
+          password: pending.password,
         }),
       });
 

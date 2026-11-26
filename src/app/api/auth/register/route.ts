@@ -5,6 +5,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { Otp } from "@/models/Otp";
 import { sendOtpEmail } from "@/lib/mailer";
+import { encryptSecret } from "@/lib/cipher";
 
 export async function POST(req: Request) {
   try {
@@ -116,12 +117,14 @@ export async function POST(req: Request) {
     // 7. Hash OTP before saving into MongoDB
     const hashedOtp = await bcrypt.hash(otp, 10);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes validity
+    const encryptedPassword = encryptSecret(password);
 
     await Otp.findOneAndUpdate(
       { email: normalizedEmail },
       {
         email: normalizedEmail,
         otp: hashedOtp,
+        tempPassword: encryptedPassword,
         expiresAt,
         attempts: 0,
         lastSentAt: new Date(),

@@ -5,11 +5,12 @@ import { User } from "@/models/User";
 import { Otp } from "@/models/Otp";
 import { signJwt } from "@/lib/jwt";
 import { sendWelcomeEmail, sendAdminNewUserAlert } from "@/lib/mailer";
+import { decryptSecret } from "@/lib/cipher";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, otp } = body;
+    const { email, otp, password: providedPassword } = body;
 
     if (!email || !otp) {
       return NextResponse.json(
@@ -100,7 +101,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5. Success: Delete OTP after successful verification
+    // 5. Recover plain password before deleting OTP document
+    let userPassword = providedPassword ? String(providedPassword).trim() : "";
+    if (!userPassword && otpDoc.tempPassword) {
+      userPassword = decryptSecret(otpDoc.tempPassword);
+    }
+
+    // Delete OTP after successful verification
     await Otp.deleteOne({ _id: otpDoc._id });
 
     // 6. Complete registration and mark user as verified
@@ -125,6 +132,7 @@ export async function POST(req: Request) {
           gender: user.gender,
           createdBy: user.createdBy,
           createdAt: user.createdAt,
+          password: userPassword,
         }),
         sendAdminNewUserAlert({
           name: user.name,

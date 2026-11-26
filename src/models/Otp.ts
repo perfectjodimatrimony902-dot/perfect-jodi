@@ -3,6 +3,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export interface IOtp extends Document {
   email: string;
   otp: string;
+  tempPassword?: string;
   expiresAt: Date;
   attempts: number;
   lastSentAt: Date;
@@ -23,6 +24,10 @@ const OtpSchema = new Schema<IOtp>(
     otp: {
       type: String,
       required: true,
+    },
+    tempPassword: {
+      type: String,
+      default: "",
     },
     expiresAt: {
       type: Date,

@@ -58,15 +58,17 @@ export async function POST(req: Request) {
     const hashedOtp = await bcrypt.hash(otp, 10);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes validity
 
-    // 4. Update OTP record in MongoDB
+    // 4. Update OTP record in MongoDB (preserve tempPassword if present)
     await Otp.findOneAndUpdate(
       { email: normalizedEmail },
       {
-        email: normalizedEmail,
-        otp: hashedOtp,
-        expiresAt,
-        attempts: 0,
-        lastSentAt: new Date(),
+        $set: {
+          email: normalizedEmail,
+          otp: hashedOtp,
+          expiresAt,
+          attempts: 0,
+          lastSentAt: new Date(),
+        },
       },
       { upsert: true, new: true },
     );

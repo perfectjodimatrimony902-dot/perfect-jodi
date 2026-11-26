@@ -135,6 +135,7 @@ export interface WelcomeEmailData {
   gender?: string;
   createdBy?: string;
   createdAt?: Date | string;
+  password?: string;
 }
 
 /**
@@ -148,19 +149,19 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
 
   const formattedDate = data.createdAt
     ? new Date(data.createdAt).toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
+      timeZone: "Asia/Kolkata",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
     : new Date().toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
 
   const genderLabel =
     data.gender === "female"
@@ -169,11 +170,16 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
         ? "Groom (Male)"
         : data.gender || "Not Specified";
 
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  const loginUrl = `${appUrl.replace(/\/+$/, "")}/login`;
+
   const mailOptions = {
     from: `"Perfect Jodi Matrimony" <${fromEmail}>`,
     to: normalizedTo,
-    subject: `Welcome to Perfect Jodi, ${recipientName}! Your Account is Verified 🎉`,
-    text: `Congratulations & Welcome, ${recipientName}!\n\nYour matrimonial account on Perfect Jodi has been successfully created and verified.\n\nAccount Details:\n- Full Name: ${recipientName}\n- Email: ${normalizedTo}\n- Mobile: +91 ${data.mobile || "N/A"}\n- Profile For: ${genderLabel}\n- Created By: ${data.createdBy || "Self"}\n- Registration Date: ${formattedDate}\n- Status: Verified Active\n\nNext Step: Complete your matrimonial profile with photos and Horoscope details to get 5x more responses.\n\nWarm regards,\nPerfect Jodi Matrimony Team\nEmail: ${fromEmail}`,
+    subject: `Welcome to Perfect Jodi, ${recipientName}! Your Account & Login Details 🎉`,
+    text: `Congratulations & Welcome, ${recipientName}!\n\nYour matrimonial account on Perfect Jodi has been successfully created and verified.\n\n🔐 YOUR LOGIN CREDENTIALS:\n- Login ID / Email: ${normalizedTo}\n${data.password ? `- Password: ${data.password}\n` : ""}- Login URL: ${loginUrl}\n\n📋 Registration Details:\n- Full Name: ${recipientName}\n- Mobile: +91 ${data.mobile || "N/A"}\n- Profile Created For: ${genderLabel}\n- Created By: ${data.createdBy || "Self"}\n- Registration Date: ${formattedDate}\n- Status: Verified Active\n\nNext Step: Complete your matrimonial profile with photos and Horoscope details to get 5x more responses.\n\nWarm regards,\nPerfect Jodi Matrimony Team\nEmail: ${fromEmail}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -218,8 +224,57 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
                     <p style="margin: 0 0 18px; color: #57534e; font-size: 15px; line-height: 1.6;">
                       We are thrilled to welcome you to <strong>Perfect Jodi Matrimony</strong>. Your registration is complete and your email has been verified successfully.
                     </p>
-                    <p style="margin: 0 0 24px; color: #57534e; font-size: 14px; line-height: 1.6;">
-                      Here are your registered account details for your reference:
+
+                    <!-- Dedicated Login Credentials Box -->
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #86efac; border-radius: 18px; overflow: hidden; margin-bottom: 24px;">
+                      <tr>
+                        <td style="padding: 14px 20px; background-color: #dcfce7; border-bottom: 1.5px solid #bbf7d0;">
+                          <strong style="color: #166534; font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px;">
+                            🔐 Your Login Credentials
+                          </strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 18px 20px;">
+                          <table width="100%" border="0" cellspacing="0" cellpadding="6">
+                            <tr>
+                              <td width="36%" style="color: #4b5563; font-size: 13px; font-weight: 600;">Login ID / Email:</td>
+                              <td style="color: #111827; font-size: 14px; font-weight: 700;">
+                                <a href="mailto:${normalizedTo}" style="color: #881337; text-decoration: none; font-weight: 700;">${normalizedTo}</a>
+                              </td>
+                            </tr>
+                            ${data.password
+        ? `
+                            <tr>
+                              <td style="color: #4b5563; font-size: 13px; font-weight: 600;">Password:</td>
+                              <td>
+                                <span style="color: #881337; font-size: 16px; font-family: monospace, Consolas, Courier, sans-serif; font-weight: 800; background-color: #ffffff; padding: 6px 14px; border-radius: 8px; border: 1.5px dashed #f87171; display: inline-block; letter-spacing: 0.5px;">
+                                  ${data.password}
+                                </span>
+                              </td>
+                            </tr>
+                            `
+        : ""
+      }
+                          </table>
+                          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed #bbf7d0;">
+                            <p style="margin: 0; color: #15803d; font-size: 12px; line-height: 1.5;">
+                              ✓ Keep your credentials safe. You can use this email and password to log in anytime.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Login CTA Button -->
+                    <div style="text-align: center; margin: 0 0 28px;">
+                      <a href="${loginUrl}" style="display: inline-block; background: linear-gradient(135deg, #881337 0%, #9f1239 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; padding: 13px 36px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(136, 19, 55, 0.35); text-transform: uppercase; letter-spacing: 0.5px;">
+                        Log In to Your Account →
+                      </a>
+                    </div>
+
+                    <p style="margin: 0 0 16px; color: #57534e; font-size: 14px; line-height: 1.6;">
+                      Here are your complete registration details:
                     </p>
 
                     <!-- Details Card -->
@@ -227,7 +282,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
                       <tr>
                         <td style="padding: 16px 20px; background-color: #f3e5d0; border-bottom: 1px solid #e7cdb0;">
                           <strong style="color: #881337; font-size: 14px; text-transform: uppercase; letter-spacing: 0.8px;">
-                            📋 Your Registration Details
+                            📋 Your Profile Details
                           </strong>
                         </td>
                       </tr>
@@ -242,12 +297,21 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
                               <td style="color: #78716c; font-size: 13px; font-weight: 500;">Registered Email:</td>
                               <td style="color: #1c1917; font-size: 14px; font-weight: 600;">${normalizedTo}</td>
                             </tr>
+                            ${data.password
+        ? `
+                            <tr>
+                              <td style="color: #78716c; font-size: 13px; font-weight: 500;">Password:</td>
+                              <td style="color: #881337; font-size: 14px; font-weight: 700; font-family: monospace;">${data.password}</td>
+                            </tr>
+                            `
+        : ""
+      }
                             <tr>
                               <td style="color: #78716c; font-size: 13px; font-weight: 500;">Mobile Number:</td>
                               <td style="color: #1c1917; font-size: 14px; font-weight: 600;">+91 ${data.mobile || "Provided"}</td>
                             </tr>
                             <tr>
-                              <td style="color: #78716c; font-size: 13px; font-weight: 500;">Profile For:</td>
+                              <td style="color: #78716c; font-size: 13px; font-weight: 500;">Profile Created For:</td>
                               <td style="color: #1c1917; font-size: 14px; font-weight: 600;">${genderLabel}</td>
                             </tr>
                             <tr>
@@ -333,14 +397,14 @@ export async function sendAdminNewUserAlert(data: AdminAlertData) {
 
   const formattedDate = data.createdAt
     ? new Date(data.createdAt).toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
+      timeZone: "Asia/Kolkata",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
     : new Date().toLocaleDateString("en-IN");
 
   const genderLabel =
@@ -354,7 +418,7 @@ export async function sendAdminNewUserAlert(data: AdminAlertData) {
     from: `"Perfect Jodi Alerts" <${fromEmail}>`,
     to: adminEmail,
     subject: `🔔 [New User Registration] ${data.name} just registered on Perfect Jodi`,
-    text: `New User Registration Alert!\n\nA new member has completed email verification:\n\n- Full Name: ${data.name}\n- Registered Email: ${data.email}\n- Mobile Number: +91 ${data.mobile || "N/A"}\n- Looking For: ${genderLabel}\n- Date of Birth: ${data.dob || "Not Provided"}\n- Profile Created By: ${data.createdBy || "Self"}\n- Registered At: ${formattedDate}\n- Status: Email Verified Active ✓\n\nThis is an automated administrative notification sent from Perfect Jodi Matrimony.`,
+    text: `New User Registration Alert!\n\nA new member has completed email verification:\n\n- Full Name: ${data.name}\n- Registered Email: ${data.email}\n- Mobile Number: +91 ${data.mobile || "N/A"}\n- Profile Created For: ${genderLabel}\n- Date of Birth: ${data.dob || "Not Provided"}\n- Profile Created By: ${data.createdBy || "Self"}\n- Registered At: ${formattedDate}\n- Status: Email Verified Active ✓\n\nThis is an automated administrative notification sent from Perfect Jodi Matrimony.`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -407,19 +471,18 @@ export async function sendAdminNewUserAlert(data: AdminAlertData) {
                         <td style="color: #09090b; font-size: 14px; font-weight: 600;">+91 ${data.mobile || "N/A"}</td>
                       </tr>
                       <tr style="border-bottom: 1px solid #f4f4f5;">
-                        <td style="color: #71717a; font-size: 13px; font-weight: 600;">Looking For:</td>
+                        <td style="color: #71717a; font-size: 13px; font-weight: 600;">Profile Created For:</td>
                         <td style="color: #09090b; font-size: 14px; font-weight: 600;">${genderLabel}</td>
                       </tr>
-                      ${
-                        data.dob
-                          ? `
+                      ${data.dob
+        ? `
                       <tr style="border-bottom: 1px solid #f4f4f5;">
                         <td style="color: #71717a; font-size: 13px; font-weight: 600;">Date of Birth:</td>
                         <td style="color: #09090b; font-size: 14px; font-weight: 600;">${data.dob}</td>
                       </tr>
                       `
-                          : ""
-                      }
+        : ""
+      }
                       <tr style="border-bottom: 1px solid #f4f4f5;">
                         <td style="color: #71717a; font-size: 13px; font-weight: 600;">Profile Created By:</td>
                         <td style="color: #09090b; font-size: 14px; font-weight: 600;">${data.createdBy || "Self"}</td>
@@ -428,16 +491,15 @@ export async function sendAdminNewUserAlert(data: AdminAlertData) {
                         <td style="color: #71717a; font-size: 13px; font-weight: 600;">Registered On:</td>
                         <td style="color: #09090b; font-size: 14px; font-weight: 600;">${formattedDate}</td>
                       </tr>
-                      ${
-                        data.userId
-                          ? `
+                      ${data.userId
+        ? `
                       <tr style="border-bottom: 1px solid #f4f4f5;">
                         <td style="color: #71717a; font-size: 13px; font-weight: 600;">Account ID:</td>
                         <td style="color: #71717a; font-size: 13px; font-family: monospace;">${data.userId}</td>
                       </tr>
                       `
-                          : ""
-                      }
+        : ""
+      }
                       <tr>
                         <td style="color: #71717a; font-size: 13px; font-weight: 600;">Email Verification:</td>
                         <td style="color: #16a34a; font-size: 13px; font-weight: 700;">Verified Active ✓</td>
