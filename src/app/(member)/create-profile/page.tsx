@@ -255,7 +255,11 @@ export default function CreateProfilePage() {
       if (account) {
         syncMongoSession(account, data.profile, data.token || token);
       }
-      await syncAllProfilesFromDb();
+      try {
+        await syncAllProfilesFromDb();
+      } catch (syncErr) {
+        console.warn("Profiles sync notice:", syncErr);
+      }
 
       toast.success("Congratulations! Your matrimonial profile is created & active.");
       navigate({ to: "/dashboard" });
@@ -265,7 +269,11 @@ export default function CreateProfilePage() {
       if (account) {
         syncMongoSession(account, draft, token);
       }
-      await syncAllProfilesFromDb();
+      try {
+        await syncAllProfilesFromDb();
+      } catch (syncErr) {
+        console.warn("Profiles sync notice:", syncErr);
+      }
       toast.success("Profile saved!");
       navigate({ to: "/dashboard" });
     }
