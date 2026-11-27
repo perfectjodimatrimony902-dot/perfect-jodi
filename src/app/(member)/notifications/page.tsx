@@ -1,17 +1,23 @@
 "use client";
 
 import { useRouter } from "@/lib/navigation";
+import { useEffect } from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/common/EmptyState";
 import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { formatDateTime, useSession } from "@/hooks/use-demo";
-import { markAllNotificationsRead, markNotificationRead } from "@/lib/actions";
+import { markAllNotificationsRead, markNotificationRead, syncNotificationsFromDb } from "@/lib/actions";
 import { cn } from "@/lib/utils";
 
 export default function NotificationsPage() {
   const { state, account } = useSession();
   const router = useRouter();
+
+  useEffect(() => {
+    syncNotificationsFromDb();
+  }, []);
+
   const list = account ? state.notifications.filter((n) => n.accountId === account.id) : [];
   const unread = list.filter((n) => !n.read).length;
 

@@ -100,8 +100,8 @@ export function logout() {
   if (typeof window !== "undefined") {
     try {
       localStorage.removeItem("pj_jwt_token");
-      fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-    } catch {}
+      fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
+    } catch { }
   }
   setState((s) => ({ ...s, session: null }));
 }
@@ -128,7 +128,8 @@ export function syncMongoSession(
   if (token && typeof window !== "undefined") {
     try {
       localStorage.setItem("pj_jwt_token", token);
-    } catch {}
+      localStorage.setItem("pj_token", token);
+    } catch { }
   }
 
   const userId = user.id || user._id || uid("u");
@@ -259,8 +260,13 @@ export function syncMongoSession(
 
 /** Fetches all live approved profiles from MongoDB Atlas and merges into client state */
 export async function syncAllProfilesFromDb(): Promise<Profile[]> {
+  if (typeof window === "undefined") return [];
   try {
     const res = await fetch("/api/profiles", { cache: "no-store" });
+    if (!res.ok) {
+      console.warn("Profiles sync response status:", res.status);
+      return [];
+    }
     const data = await res.json();
     if (data.ok && Array.isArray(data.profiles) && data.profiles.length > 0) {
       const isMongoId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
@@ -280,8 +286,8 @@ export async function syncAllProfilesFromDb(): Promise<Profile[]> {
       });
       return data.profiles;
     }
-  } catch (err) {
-    console.error("Failed to sync live profiles from database:", err);
+  } catch (err: unknown) {
+    console.warn("Failed to sync live profiles from database:", err instanceof Error ? err.message : err);
   }
   return [];
 }
@@ -364,27 +370,27 @@ export function completeRegistration(
       prefs:
         input.gender === "female"
           ? {
-              ageMin: 25,
-              ageMax: 35,
-              heightMin: 160,
-              heightMax: 190,
-              religions: [],
-              locations: [],
-              education: "",
-              occupation: "",
-              maritalStatus: [],
-            }
+            ageMin: 25,
+            ageMax: 35,
+            heightMin: 160,
+            heightMax: 190,
+            religions: [],
+            locations: [],
+            education: "",
+            occupation: "",
+            maritalStatus: [],
+          }
           : {
-              ageMin: 21,
-              ageMax: 32,
-              heightMin: 150,
-              heightMax: 175,
-              religions: [],
-              locations: [],
-              education: "",
-              occupation: "",
-              maritalStatus: [],
-            },
+            ageMin: 21,
+            ageMax: 32,
+            heightMin: 150,
+            heightMax: 175,
+            religions: [],
+            locations: [],
+            education: "",
+            occupation: "",
+            maritalStatus: [],
+          },
       tone: Math.floor(Math.random() * 6),
       status: "pending",
       verified: false,
@@ -448,13 +454,17 @@ export function saveMyProfile(patch: Partial<Profile>, submit = false): Result {
 
 /* ---------- Interests ---------- */
 
-export function sendInterest(toProfileId: string): Result {
+export function sendInterest(toProfileId: string, toUserId?: string): Result {
   const s = getState();
   const from = myProfileId(s);
   if (!from) return { ok: false, error: "Please sign in to send an interest." };
   if (from === toProfileId) return { ok: false, error: "You can't send an interest to yourself." };
   if (!canSendInterest(s.interests, from, toProfileId))
     return { ok: false, error: "You're already connected or have a pending interest." };
+
+  const targetProfile = s.profiles.find((p) => p.id === toProfileId);
+  const resolvedUserId = toUserId || targetProfile?.ownerId;
+
   setState((st) => {
     const next: DemoState = {
       ...st,
@@ -478,6 +488,28 @@ export function sendInterest(toProfileId: string): Result {
       "interest",
     );
   });
+
+  // Call backend API to persist in MongoDB, emit real-time socket event, and send email
+  if (typeof window !== "undefined") {
+    fetch("/api/interests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        toProfileId,
+        toUserId: resolvedUserId,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          console.warn("Interest sync notice:", data?.error || res.statusText);
+        }
+      })
+      .catch((err) => {
+        console.warn("Interest API network notice:", err);
+      });
+  }
+
   return { ok: true };
 }
 
@@ -502,7 +534,7 @@ export function setInterestStatus(interestId: string, status: InterestStatus): R
         next,
         ownerOf(st, it.fromProfileId),
         `${nameOf(st, it.toProfileId)} accepted your interest. You can now message each other.`,
-        `/messages?with=${it.toProfileId}`,
+        `/messages`,
         "accepted",
       );
     } else if (status === "declined") {
@@ -516,6 +548,16 @@ export function setInterestStatus(interestId: string, status: InterestStatus): R
     }
     return next;
   });
+
+  // Call backend API if this is a MongoDB record
+  if (typeof window !== "undefined" && /^[0-9a-fA-F]{24}$/.test(interestId)) {
+    fetch("/api/interests", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ interestId, status }),
+    }).catch((err) => console.warn("Failed to sync interest status to DB:", err));
+  }
+
   return { ok: true };
 }
 
@@ -606,15 +648,24 @@ export function markNotificationRead(id: string) {
     ...s,
     notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
   }));
+
+  if (typeof window !== "undefined" && /^[0-9a-fA-F]{24}$/.test(id)) {
+    fetch(`/api/notifications/${id}/read`, { method: "PATCH" }).catch((err) =>
+      console.warn("Failed to mark notification read in DB:", err)
+    );
+  }
 }
+
 export function deleteNotification(id: string) {
   setState((s) => ({ ...s, notifications: s.notifications.filter((n) => n.id !== id) }));
 }
+
 export function clearNotifications() {
   const acc = currentAccount(getState());
   if (!acc) return;
   setState((s) => ({ ...s, notifications: s.notifications.filter((n) => n.accountId !== acc.id) }));
 }
+
 export function markAllNotificationsRead() {
   const acc = currentAccount(getState());
   if (!acc) return;
@@ -622,6 +673,104 @@ export function markAllNotificationsRead() {
     ...s,
     notifications: s.notifications.map((n) => (n.accountId === acc.id ? { ...n, read: true } : n)),
   }));
+
+  if (typeof window !== "undefined") {
+    fetch("/api/notifications", { method: "PATCH" }).catch((err) =>
+      console.warn("Failed to mark all notifications read in DB:", err)
+    );
+  }
+}
+
+/**
+ * Synchronizes persistent notifications from MongoDB Atlas into client state
+ */
+export async function syncNotificationsFromDb(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const res = await fetch("/api/notifications", { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.notifications)) {
+      const s = getState();
+      const current = currentAccount(s);
+      if (!current) return;
+
+      setState((st) => {
+        const existingIds = new Set(st.notifications.map((n) => n.id));
+        const newItems = data.notifications
+          .filter((n: any) => !existingIds.has(n.id))
+          .map((n: any) => ({
+            id: n.id,
+            accountId: current.id,
+            text: n.text,
+            link: n.link || "/interests/received",
+            at: n.createdAt ? new Date(n.createdAt).toISOString() : now(),
+            read: Boolean(n.read),
+            kind: (n.kind as NotificationKind) || "interest",
+          }));
+
+        const mongoStatusMap = new Map<string, boolean>(
+          data.notifications.map((n: any) => [n.id, Boolean(n.read)])
+        );
+
+        const updatedExisting = st.notifications.map((n) => {
+          if (mongoStatusMap.has(n.id)) {
+            return { ...n, read: mongoStatusMap.get(n.id)! };
+          }
+          return n;
+        });
+
+        return {
+          ...st,
+          notifications: [...newItems, ...updatedExisting],
+        };
+      });
+    }
+  } catch (err) {
+    console.warn("Failed to sync notifications from DB:", err);
+  }
+}
+
+/**
+ * Synchronizes incoming and outgoing interests from MongoDB Atlas into client state
+ */
+export async function syncInterestsFromDb(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const res = await fetch("/api/interests", { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.ok) {
+      const { received = [], sent = [] } = data;
+      setState((st) => {
+        const existingInterestMap = new Map<string, any>(st.interests.map((i) => [i.id, i]));
+        const combined = [...received, ...sent];
+        for (const item of combined) {
+          const id = item._id ? item._id.toString() : item.id;
+          const fromProfileId = item.senderProfileId ? item.senderProfileId.toString() : item.fromProfileId;
+          const toProfileId = item.receiverProfileId ? item.receiverProfileId.toString() : item.toProfileId;
+          const status = item.status || "pending";
+          const createdAt = item.createdAt ? new Date(item.createdAt).toISOString() : now();
+          const updatedAt = item.updatedAt ? new Date(item.updatedAt).toISOString() : now();
+
+          existingInterestMap.set(id, {
+            id,
+            fromProfileId,
+            toProfileId,
+            status,
+            createdAt,
+            updatedAt,
+          });
+        }
+        return {
+          ...st,
+          interests: Array.from(existingInterestMap.values()),
+        };
+      });
+    }
+  } catch (err) {
+    console.warn("Failed to sync interests from DB:", err);
+  }
 }
 
 /* ---------- Messaging (simulated) ---------- */
@@ -653,10 +802,10 @@ function appendMessage(
       conversations: st.conversations.map((c) =>
         c.id === existing.id
           ? {
-              ...c,
-              messages: [...c.messages, msg],
-              lastRead: from === me ? { ...c.lastRead, [me]: at } : c.lastRead,
-            }
+            ...c,
+            messages: [...c.messages, msg],
+            lastRead: from === me ? { ...c.lastRead, [me]: at } : c.lastRead,
+          }
           : c,
       ),
     };
@@ -836,11 +985,11 @@ export function adminSetProfileStatus(
       profiles: s.profiles.map((p) =>
         p.id === profileId
           ? {
-              ...p,
-              status,
-              rejectionReason:
-                status === "rejected" ? reason || "Did not meet profile guidelines" : undefined,
-            }
+            ...p,
+            status,
+            rejectionReason:
+              status === "rejected" ? reason || "Did not meet profile guidelines" : undefined,
+          }
           : p,
       ),
     };
