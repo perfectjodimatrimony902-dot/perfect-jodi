@@ -60,6 +60,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link to="/kundali-matching" className="hover:text-gold transition-colors">
+                  Kundali Matching (पत्रिका मिलान)
+                </Link>
+              </li>
+              <li>
                 <Link to="/success-stories" className="hover:text-gold transition-colors">
                   Success stories
                 </Link>

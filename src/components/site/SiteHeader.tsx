@@ -14,6 +14,7 @@ import {
   Sparkles,
   User,
   Inbox,
+  Moon,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -35,6 +36,7 @@ import { logout } from "@/lib/actions";
 
 export const PUBLIC_NAV = [
   { to: "/profiles", label: "Browse Profiles" },
+  { to: "/kundali-matching", label: "Kundali Matching" },
   { to: "/how-it-works", label: "How It Works" },
   { to: "/membership", label: "Membership" },
   { to: "/success-stories", label: "Success Stories" },
@@ -45,6 +47,7 @@ export const PUBLIC_NAV = [
 const MEMBER_LINKS = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/my-profile", label: "My Profile", icon: User },
+  { to: "/kundali-matching", label: "Kundali Matching", icon: Moon },
   { to: "/interests/received", label: "Interests Received", icon: Inbox },
   { to: "/interests/sent", label: "Interests Sent", icon: Send },
   { to: "/shortlist", label: "Shortlist", icon: Heart },
