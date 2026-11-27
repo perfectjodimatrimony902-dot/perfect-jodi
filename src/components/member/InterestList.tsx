@@ -2,14 +2,14 @@
 
 import { Link } from "@/lib/navigation";
 import { Check, Inbox, MessageCircle, Send, Undo2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/common/EmptyState";
 import { InterestStatusBadge } from "@/components/common/StatusBadge";
 import { MiniProfileRow } from "./MiniProfileRow";
 import { formatDate, useSession } from "@/hooks/use-demo";
-import { setInterestStatus } from "@/lib/actions";
+import { setInterestStatus, syncInterestsFromDb } from "@/lib/actions";
 import type { InterestStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -24,17 +24,22 @@ const TABS: { value: InterestStatus | "all"; label: string }[] = [
 export function InterestList({ direction }: { direction: "received" | "sent" }) {
   const { state, profile } = useSession();
   const [tab, setTab] = useState<InterestStatus | "all">("all");
+
+  useEffect(() => {
+    syncInterestsFromDb();
+  }, []);
+
   const byId = useMemo(() => new Map(state.profiles.map((p) => [p.id, p])), [state.profiles]);
   const all = useMemo(
     () =>
       profile
         ? state.interests
-            .filter((i) =>
-              direction === "received"
-                ? i.toProfileId === profile.id
-                : i.fromProfileId === profile.id,
-            )
-            .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+          .filter((i) =>
+            direction === "received"
+              ? i.toProfileId === profile.id
+              : i.fromProfileId === profile.id,
+          )
+          .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
         : [],
     [state.interests, profile, direction],
   );

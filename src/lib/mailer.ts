@@ -531,3 +531,125 @@ export async function sendAdminNewUserAlert(data: AdminAlertData) {
 
   return await transporter.sendMail(mailOptions);
 }
+
+export interface ConnectNotificationEmailData {
+  toEmail: string;
+  recipientName: string;
+  senderName: string;
+  senderGender?: string;
+  senderCity?: string;
+  senderOccupation?: string;
+  senderProfileUrl: string;
+}
+
+/**
+ * Sends an email notification when another user sends a connection request / interest.
+ */
+export async function sendConnectNotificationEmail(data: ConnectNotificationEmailData) {
+  const transporter = getEmailTransporter();
+  const fromEmail = process.env.EMAIL_USER?.trim() || "perfectjodimatrimony902@gmail.com";
+  const normalizedTo = data.toEmail.trim().toLowerCase();
+
+  const mailOptions = {
+    from: `"Perfect Jodi Matchmaking" <${fromEmail}>`,
+    to: normalizedTo,
+    subject: `💍 [New Connect Request] ${data.senderName} wants to connect with you on Perfect Jodi`,
+    text: `Hello ${data.recipientName},\n\nGreat news! ${data.senderName} has sent you a connection request on Perfect Jodi Matrimony.\n\nMember Summary:\n- Name: ${data.senderName}\n- Location: ${data.senderCity || "India"}\n- Profession: ${data.senderOccupation || "Professional"}\n\nView Profile & Respond:\n${data.senderProfileUrl}\n\nWarm regards,\nPerfect Jodi Matrimony Team`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Connection Request</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #fbf7f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1c1917;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #fbf7f4; padding: 40px 15px;">
+          <tr>
+            <td align="center">
+              <table width="100%" style="max-width: 580px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); border: 1px solid #ebd9c8;">
+                <!-- Header -->
+                <tr>
+                  <td style="background: linear-gradient(135deg, #881337 0%, #701a2b 50%, #4c0519 100%); padding: 36px 30px; text-align: center;">
+                    <div style="background: rgba(255, 255, 255, 0.12); width: 60px; height: 60px; margin: 0 auto 14px; border-radius: 18px; line-height: 60px; font-size: 28px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.25);">
+                      💍
+                    </div>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800;">
+                      New Connection Request
+                    </h1>
+                    <p style="margin: 6px 0 0; color: #fde047; font-size: 13px; font-weight: 600;">
+                      Someone is interested in your matrimonial profile!
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 34px 32px 24px;">
+                    <p style="margin: 0 0 16px; color: #57534e; font-size: 15px; line-height: 1.6;">
+                      Hello <strong>${data.recipientName}</strong>,
+                    </p>
+                    <p style="margin: 0 0 22px; color: #1c1917; font-size: 16px; line-height: 1.6; font-weight: 600;">
+                      <strong>${data.senderName}</strong> has sent you a connection request on Perfect Jodi.
+                    </p>
+
+                    <!-- Details Box -->
+                    <table width="100%" border="0" cellspacing="0" cellpadding="10" style="background-color: #faf5ee; border: 1px solid #edd5be; border-radius: 16px; margin-bottom: 24px;">
+                      <tr>
+                        <td width="38%" style="color: #78716c; font-size: 13px; font-weight: 600;">Member Name:</td>
+                        <td style="color: #1c1917; font-size: 14px; font-weight: 700;">${data.senderName}</td>
+                      </tr>
+                      ${
+                        data.senderCity
+                          ? `
+                      <tr>
+                        <td style="color: #78716c; font-size: 13px; font-weight: 600;">Location:</td>
+                        <td style="color: #1c1917; font-size: 14px; font-weight: 600;">${data.senderCity}</td>
+                      </tr>
+                      `
+                          : ""
+                      }
+                      ${
+                        data.senderOccupation
+                          ? `
+                      <tr>
+                        <td style="color: #78716c; font-size: 13px; font-weight: 600;">Profession:</td>
+                        <td style="color: #1c1917; font-size: 14px; font-weight: 600;">${data.senderOccupation}</td>
+                      </tr>
+                      `
+                          : ""
+                      }
+                    </table>
+
+                    <!-- CTA Button -->
+                    <div style="text-align: center; margin: 28px 0 24px;">
+                      <a href="${data.senderProfileUrl}" style="display: inline-block; background: linear-gradient(135deg, #881337 0%, #9f1239 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; padding: 13px 36px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(136, 19, 55, 0.35);">
+                        View Profile & Respond →
+                      </a>
+                    </div>
+
+                    <p style="margin: 0; color: #a8a29e; font-size: 12px; line-height: 1.5; border-top: 1px solid #f5f5f4; padding-top: 18px; text-align: center;">
+                      🔒 Perfect Jodi keeps your contact details 100% private until you accept the connection request.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #fafaf9; padding: 20px 30px; text-align: center; border-top: 1px solid #f5f5f4;">
+                    <p style="margin: 0; color: #a8a29e; font-size: 11px;">
+                      © ${new Date().getFullYear()} Perfect Jodi Matrimony. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
