@@ -2,12 +2,13 @@
 
 import { useRouter } from "@/lib/navigation";
 import { useEffect } from "react";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/common/EmptyState";
 import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { formatDateTime, useSession } from "@/hooks/use-demo";
 import { markAllNotificationsRead, markNotificationRead, syncNotificationsFromDb } from "@/lib/actions";
+import { getSocket } from "@/lib/socket-client";
 import { cn } from "@/lib/utils";
 
 export default function NotificationsPage() {
@@ -16,6 +17,15 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     syncNotificationsFromDb();
+    const socket = getSocket();
+    if (!socket) return;
+    const handleInstantSync = () => {
+      syncNotificationsFromDb();
+    };
+    socket.on("new-notification", handleInstantSync);
+    return () => {
+      socket.off("new-notification", handleInstantSync);
+    };
   }, []);
 
   const list = account ? state.notifications.filter((n) => n.accountId === account.id) : [];
@@ -27,9 +37,26 @@ export default function NotificationsPage() {
         title="Notifications"
         text={unread ? `${unread} unread` : "You're all caught up."}
         action={
-          <Button variant="outline" size="sm" onClick={markAllNotificationsRead} disabled={!unread}>
-            <CheckCheck className="h-4 w-4" /> Mark all as read
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => syncNotificationsFromDb()}
+              aria-label="Refresh notifications"
+              className="h-8 gap-1 text-xs"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Refresh
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={markAllNotificationsRead}
+              disabled={!unread}
+              className="h-8 gap-1 text-xs"
+            >
+              <CheckCheck className="h-4 w-4" /> Mark all as read
+            </Button>
+          </div>
         }
       />
       {list.length === 0 ? (
