@@ -2,6 +2,7 @@ import { DEMO_OTP } from "@/config/brand";
 import { getState, setState, uid } from "./store";
 import { accountPrefs, canMessage, canSendInterest } from "./rules";
 import { recommendedMatches } from "./matching";
+import { disconnectSocket } from "./socket-client";
 import type {
   Account,
   AccountPrefs,
@@ -100,10 +101,17 @@ export function logout() {
   if (typeof window !== "undefined") {
     try {
       localStorage.removeItem("pj_jwt_token");
+      localStorage.removeItem("pj_token");
+      disconnectSocket();
       fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
     } catch { }
   }
-  setState((s) => ({ ...s, session: null }));
+  setState((s) => ({
+    ...s,
+    session: null,
+    // Clear notifications on logout so they never leak into the next user's session
+    notifications: s.notifications.filter((n) => n.accountId !== s.session?.accountId),
+  }));
 }
 
 export function syncMongoSession(
@@ -465,29 +473,20 @@ export function sendInterest(toProfileId: string, toUserId?: string): Result {
   const targetProfile = s.profiles.find((p) => p.id === toProfileId);
   const resolvedUserId = toUserId || targetProfile?.ownerId;
 
-  setState((st) => {
-    const next: DemoState = {
-      ...st,
-      interests: [
-        {
-          id: uid("i"),
-          fromProfileId: from,
-          toProfileId,
-          status: "pending",
-          createdAt: now(),
-          updatedAt: now(),
-        },
-        ...st.interests,
-      ],
-    };
-    return notify(
-      next,
-      ownerOf(st, toProfileId),
-      `${nameOf(st, from)} sent you an interest.`,
-      "/interests/received",
-      "interest",
-    );
-  });
+  setState((st) => ({
+    ...st,
+    interests: [
+      {
+        id: uid("i"),
+        fromProfileId: from,
+        toProfileId,
+        status: "pending",
+        createdAt: now(),
+        updatedAt: now(),
+      },
+      ...st.interests,
+    ],
+  }));
 
   // Call backend API to persist in MongoDB, emit real-time socket event, and send email
   if (typeof window !== "undefined") {
@@ -522,32 +521,12 @@ export function setInterestStatus(interestId: string, status: InterestStatus): R
     return { ok: false, error: "Only the receiver can respond to this interest." };
   if (status === "withdrawn" && it.fromProfileId !== pid)
     return { ok: false, error: "Only the sender can withdraw this interest." };
-  setState((st) => {
-    let next: DemoState = {
-      ...st,
-      interests: st.interests.map((i) =>
-        i.id === interestId ? { ...i, status, updatedAt: now() } : i,
-      ),
-    };
-    if (status === "accepted") {
-      next = notify(
-        next,
-        ownerOf(st, it.fromProfileId),
-        `${nameOf(st, it.toProfileId)} accepted your interest. You can now message each other.`,
-        `/messages`,
-        "accepted",
-      );
-    } else if (status === "declined") {
-      next = notify(
-        next,
-        ownerOf(st, it.fromProfileId),
-        `${nameOf(st, it.toProfileId)} did not accept your interest this time.`,
-        "/interests/sent",
-        "declined",
-      );
-    }
-    return next;
-  });
+  setState((st) => ({
+    ...st,
+    interests: st.interests.map((i) =>
+      i.id === interestId ? { ...i, status, updatedAt: now() } : i,
+    ),
+  }));
 
   // Call backend API if this is a MongoDB record
   if (typeof window !== "undefined" && /^[0-9a-fA-F]{24}$/.test(interestId)) {
@@ -696,33 +675,31 @@ export async function syncNotificationsFromDb(): Promise<void> {
       if (!current) return;
 
       setState((st) => {
-        const existingIds = new Set(st.notifications.map((n) => n.id));
-        const newItems = data.notifications
-          .filter((n: any) => !existingIds.has(n.id))
-          .map((n: any) => ({
-            id: n.id,
-            accountId: current.id,
-            text: n.text,
-            link: n.link || "/interests/received",
-            at: n.createdAt ? new Date(n.createdAt).toISOString() : now(),
-            read: Boolean(n.read),
-            kind: (n.kind as NotificationKind) || "interest",
-          }));
+        // Map all fresh notifications belonging to the current authenticated account
+        const dbItems = data.notifications.map((n: any) => ({
+          id: n.id,
+          accountId: current.id,
+          text: n.text,
+          link: n.link || "/interests/received",
+          at: n.createdAt ? new Date(n.createdAt).toISOString() : now(),
+          read: Boolean(n.read),
+          kind: (n.kind as NotificationKind) || "interest",
+        }));
 
-        const mongoStatusMap = new Map<string, boolean>(
-          data.notifications.map((n: any) => [n.id, Boolean(n.read)])
+        // Preserve any recent real-time socket notifications for this account not yet in DB query
+        const dbIds = new Set(dbItems.map((n: { id: string }) => n.id));
+        const optimisticCurrent = st.notifications.filter(
+          (n: { id: string; accountId?: string }) => n.accountId === current.id && !dbIds.has(n.id) && !n.id.startsWith("n")
         );
 
-        const updatedExisting = st.notifications.map((n) => {
-          if (mongoStatusMap.has(n.id)) {
-            return { ...n, read: mongoStatusMap.get(n.id)! };
-          }
-          return n;
-        });
+        // Keep notifications for other accounts without mock demo ("u-demo") pollution
+        const otherAccounts = st.notifications.filter(
+          (n: { accountId?: string }) => n.accountId && n.accountId !== current.id && n.accountId !== "u-demo"
+        );
 
         return {
           ...st,
-          notifications: [...newItems, ...updatedExisting],
+          notifications: [...optimisticCurrent, ...dbItems, ...otherAccounts],
         };
       });
     }

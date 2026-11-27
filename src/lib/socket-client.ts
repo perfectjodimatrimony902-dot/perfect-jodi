@@ -1,6 +1,7 @@
 import { io, Socket } from "socket.io-client";
 
 let socketInstance: Socket | null = null;
+let currentSocketToken: string | null = null;
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -31,6 +32,14 @@ export function getSocket(customToken?: string): Socket | null {
   if (typeof window === "undefined") return null;
 
   const token = customToken || getToken();
+
+  // If token has changed from the one current socket connected with, re-initialize
+  if (socketInstance && token && currentSocketToken && token !== currentSocketToken) {
+    socketInstance.disconnect();
+    socketInstance = null;
+  }
+
+  currentSocketToken = token;
 
   // If socket already exists, reuse it and update auth token if provided
   if (socketInstance) {
@@ -108,5 +117,6 @@ export function disconnectSocket(): void {
   if (socketInstance) {
     socketInstance.disconnect();
     socketInstance = null;
+    currentSocketToken = null;
   }
 }

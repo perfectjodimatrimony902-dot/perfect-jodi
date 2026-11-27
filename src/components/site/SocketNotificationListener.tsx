@@ -62,6 +62,7 @@ export function SocketNotificationListener() {
     // 3. Handler for incoming connection / system notifications
     const handleNewNotification = (data: {
       id?: string;
+      recipientUserId?: string;
       title?: string;
       text: string;
       link?: string;
@@ -69,6 +70,11 @@ export function SocketNotificationListener() {
       senderName?: string;
       createdAt?: string;
     }) => {
+      // Strict user isolation: Only process if notification is targeted to this active user
+      if (data.recipientUserId && account?.id && data.recipientUserId !== account.id) {
+        return;
+      }
+
       // Audio cue
       playChime();
 
@@ -86,27 +92,34 @@ export function SocketNotificationListener() {
         },
       });
 
-      // Update local state to immediately update bell badge counter
-      setState((st) => {
-        if (st.notifications.some((n) => n.id === notifId)) return st;
-        return {
-          ...st,
-          notifications: [
-            {
-              id: notifId,
-              accountId: account.id,
-              text: data.text,
-              link: notifLink,
-              at: data.createdAt ? new Date(data.createdAt).toISOString() : new Date().toISOString(),
-              read: false,
-              kind: (data.kind as NotificationKind) || "interest",
-            },
-            ...st.notifications,
-          ],
-        };
-      });
+      // Update local state immediately so:
+      // - Notification bell badge in SiteHeader updates instantly!
+      // - MemberNav badge updates instantly!
+      // - NotificationsPage list updates instantly!
+      const targetAccountId = account?.id || data.recipientUserId || "";
+      if (targetAccountId) {
+        setState((st) => {
+          const otherNotifs = st.notifications.filter((n) => n.id !== notifId);
+          return {
+            ...st,
+            notifications: [
+              {
+                id: notifId,
+                accountId: targetAccountId,
+                text: data.text,
+                link: notifLink,
+                at: data.createdAt ? new Date(data.createdAt).toISOString() : new Date().toISOString(),
+                read: false,
+                kind: (data.kind as NotificationKind) || "interest",
+              },
+              ...otherNotifs,
+            ],
+          };
+        });
+      }
 
-      // Also refresh interests data in case user is viewing interests page
+      // Also refresh interests and notifications data from DB in background
+      syncNotificationsFromDb();
       syncInterestsFromDb();
     };
 
@@ -126,24 +139,24 @@ export function SocketNotificationListener() {
       playChime();
       const senderName = data.senderName || data.sender?.name || "A member";
 
-        toast.info(`💬 ${senderName}`, {
-          description: data.message,
-          duration: 7000,
-          action: {
-            label: "Open Chat",
-            onClick: () => router.push("/messages"),
-          },
-        });
-      };
+      toast.info(`💬 ${senderName}`, {
+        description: data.message,
+        duration: 7000,
+        action: {
+          label: "Open Chat",
+          onClick: () => router.push("/messages"),
+        },
+      });
+    };
 
-      socket.on("new-notification", handleNewNotification);
-      socket.on("receive-message", handleReceiveMessage);
+    socket.on("new-notification", handleNewNotification);
+    socket.on("receive-message", handleReceiveMessage);
 
-      return () => {
-        socket.off("new-notification", handleNewNotification);
-        socket.off("receive-message", handleReceiveMessage);
-      };
-    }, [account, router]);
+    return () => {
+      socket.off("new-notification", handleNewNotification);
+      socket.off("receive-message", handleReceiveMessage);
+    };
+  }, [account, router]);
 
   return null;
 }

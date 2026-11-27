@@ -127,6 +127,7 @@ export async function POST(req: Request) {
 
     const notificationPayload = {
       id: notification._id.toString(),
+      recipientUserId: receiverUserId.toString(),
       title: notification.title,
       text: notification.text,
       link: notification.link,
@@ -287,6 +288,7 @@ export async function PATCH(req: Request) {
 
         emitToUser(interest.senderUserId.toString(), "new-notification", {
           id: notif._id.toString(),
+          recipientUserId: interest.senderUserId.toString(),
           title: notif.title,
           text: notif.text,
           link: notif.link,

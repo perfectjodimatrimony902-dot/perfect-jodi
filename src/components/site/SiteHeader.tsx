@@ -236,10 +236,15 @@ export function SiteHeader() {
                         key={l.to}
                         to={l.to}
                         onClick={() => setOpen(false)}
-                        className="border-b py-3 text-sm text-foreground/80"
-                        activeProps={{ className: "text-primary" }}
+                        className="flex items-center justify-between border-b py-3 text-sm text-foreground/80"
+                        activeProps={{ className: "text-primary font-semibold" }}
                       >
-                        {l.label}
+                        <span>{l.label}</span>
+                        {l.to === "/notifications" && unread > 0 && (
+                          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                            {unread}
+                          </span>
+                        )}
                       </Link>
                     ))}
                   </>
