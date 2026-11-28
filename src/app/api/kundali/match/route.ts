@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { calculateKundaliMilan } from "@/lib/kundali";
+import { calculateKundaliMilan, parseTimeTo24h } from "@/lib/kundali";
 import type { Profile } from "@/lib/types";
 
 // Standard coordinates for major Indian cities
@@ -48,7 +48,7 @@ function getCityCoordinates(place?: string): { lat: number; lng: number } {
 
 function parseBirthData(profile: Profile) {
   const d = new Date(profile.dob || "1996-01-01");
-  const [hours, minutes] = (profile.birthTime || "12:00").split(":").map(Number);
+  const { hours, minutes } = parseTimeTo24h(profile.birthTime);
   const coords = getCityCoordinates(profile.birthPlace || profile.city);
 
   return {

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ChipSelect } from "@/components/common/ChipSelect";
 import { FormField } from "@/components/common/FormField";
 import { NativeSelect } from "@/components/common/NativeSelect";
+import { TimePickerAmPm } from "@/components/common/TimePickerAmPm";
 import { ProfileStatusBadge } from "@/components/common/StatusBadge";
 import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { AVATAR_TONE_CLASSES, ProfileAvatar } from "@/components/profile/ProfileAvatar";
@@ -295,116 +296,115 @@ function ProfileWizard() {
         {/* Step 0: Personal & Horoscope */}
         <div className={cn("space-y-6", step !== 0 && "hidden")}>
           <div className="grid gap-5 sm:grid-cols-2">
-              {txt("name", "Full name *")}
-              <FormField id="w-dob" label="Date of birth *" error={errors.dob}>
+            {txt("name", "Full name *")}
+            <FormField id="w-dob" label="Date of birth *" error={errors.dob}>
+              <Input
+                id="w-dob"
+                type="date"
+                value={draft.dob}
+                onChange={(e) => set("dob", e.target.value)}
+              />
+            </FormField>
+            <FormField id="w-gender" label="Gender">
+              <NativeSelect
+                id="w-gender"
+                value={draft.gender}
+                disabled
+                options={[
+                  { value: "female", label: "Female" },
+                  { value: "male", label: "Male" },
+                ]}
+              />
+            </FormField>
+
+            <FormField
+              id="w-mobile"
+              label="Candidate Contact Mobile *"
+              error={errors.mobile}
+              hint="Direct contact phone number for prospective matches"
+            >
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">
+                  +91
+                </span>
                 <Input
-                  id="w-dob"
-                  type="date"
-                  value={draft.dob}
-                  onChange={(e) => set("dob", e.target.value)}
+                  id="w-mobile"
+                  type="tel"
+                  maxLength={10}
+                  value={draft.mobile || ""}
+                  onChange={(e) => set("mobile", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  placeholder="9876543210"
+                  className="pl-11"
                 />
-              </FormField>
-              <FormField id="w-gender" label="Gender">
-                <NativeSelect
-                  id="w-gender"
-                  value={draft.gender}
-                  disabled
-                  options={[
-                    { value: "female", label: "Female" },
-                    { value: "male", label: "Male" },
-                  ]}
-                />
-              </FormField>
+              </div>
+            </FormField>
 
-              <FormField
-                id="w-mobile"
-                label="Candidate Contact Mobile *"
-                error={errors.mobile}
-                hint="Direct contact phone number for prospective matches"
-              >
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">
-                    +91
-                  </span>
-                  <Input
-                    id="w-mobile"
-                    type="tel"
-                    maxLength={10}
-                    value={draft.mobile || ""}
-                    onChange={(e) => set("mobile", e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    placeholder="9876543210"
-                    className="pl-11"
-                  />
-                </div>
-              </FormField>
-
-              <FormField
+            <FormField
+              id="w-email"
+              label="Candidate Contact Email *"
+              error={errors.email}
+              hint="Direct email address for candidate communications"
+            >
+              <Input
                 id="w-email"
-                label="Candidate Contact Email *"
-                error={errors.email}
-                hint="Direct email address for candidate communications"
-              >
-                <Input
-                  id="w-email"
-                  type="email"
-                  value={draft.email || ""}
-                  onChange={(e) => set("email", e.target.value.trim().toLowerCase())}
-                  placeholder="candidate@example.com"
-                />
-              </FormField>
-              <FormField id="w-height" label="Height *" error={errors.heightCm}>
-                <NativeSelect
-                  id="w-height"
-                  value={draft.heightCm ? String(draft.heightCm) : ""}
-                  onChange={(e) => set("heightCm", Number(e.target.value))}
-                  placeholder="Select"
-                  options={heights}
-                />
-              </FormField>
-              <FormField id="w-weight" label="Weight">
-                <NativeSelect
-                  id="w-weight"
-                  value={draft.weightKg ? String(draft.weightKg) : "68"}
-                  onChange={(e) => set("weightKg", Number(e.target.value))}
-                  options={weights}
-                />
-              </FormField>
-              {sel("maritalStatus", "Marital status *", MARITAL_STATUSES)}
-              {sel("disability", "Physical disability", DISABILITIES)}
-              {sel("motherTongue", "Mother tongue *", MOTHER_TONGUES)}
+                type="email"
+                value={draft.email || ""}
+                onChange={(e) => set("email", e.target.value.trim().toLowerCase())}
+                placeholder="candidate@example.com"
+              />
+            </FormField>
+            <FormField id="w-height" label="Height *" error={errors.heightCm}>
+              <NativeSelect
+                id="w-height"
+                value={draft.heightCm ? String(draft.heightCm) : ""}
+                onChange={(e) => set("heightCm", Number(e.target.value))}
+                placeholder="Select"
+                options={heights}
+              />
+            </FormField>
+            <FormField id="w-weight" label="Weight">
+              <NativeSelect
+                id="w-weight"
+                value={draft.weightKg ? String(draft.weightKg) : "68"}
+                onChange={(e) => set("weightKg", Number(e.target.value))}
+                options={weights}
+              />
+            </FormField>
+            {sel("maritalStatus", "Marital status *", MARITAL_STATUSES)}
+            {sel("disability", "Physical disability", DISABILITIES)}
+            {sel("motherTongue", "Mother tongue *", MOTHER_TONGUES)}
 
-              <div className="sm:col-span-2">
-                <p className="mb-2 text-sm font-medium">Languages known</p>
-                <ChipSelect
-                  label="Languages"
-                  options={LANGUAGES_KNOWN}
-                  value={draft.languages || []}
-                  onChange={(v) => set("languages", v)}
-                />
-              </div>
+            <div className="sm:col-span-2">
+              <p className="mb-2 text-sm font-medium">Languages known</p>
+              <ChipSelect
+                label="Languages"
+                options={LANGUAGES_KNOWN}
+                value={draft.languages || []}
+                onChange={(v) => set("languages", v)}
+              />
             </div>
+          </div>
 
-            <div className="pt-4 border-t">
-              <h3 className="font-semibold text-base mb-3">Religion & Horoscope Details</h3>
-              <div className="grid gap-5 sm:grid-cols-2">
-                {sel("religion", "Religion *", RELIGIONS)}
-                {sel("community", "Community / Caste *", COMMUNITIES)}
-                {txt("subCaste", "Sub-caste", "e.g. Kanyakubja")}
-                {txt("gotra", "Gotra", "e.g. Kashyap")}
-                {sel("manglik", "Manglik status", MANGLIK_STATUSES)}
-                {sel("rashi", "Rashi (Moon sign)", RASHIS)}
-                <FormField id="w-birthtime" label="Time of birth">
-                  <Input
+          <div className="pt-4 border-t">
+            <h3 className="font-semibold text-base mb-3">Religion & Horoscope Details</h3>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {sel("religion", "Religion *", RELIGIONS)}
+              {sel("community", "Community / Caste *", COMMUNITIES)}
+              {txt("subCaste", "Sub-caste", "e.g. Kanyakubja")}
+              {txt("gotra", "Gotra", "e.g. Kashyap")}
+              {sel("manglik", "Manglik status", MANGLIK_STATUSES)}
+              {sel("rashi", "Rashi (Moon sign)", RASHIS)}
+                  <FormField id="w-birthtime" label="Time of birth (जन्म वेळ)">
+                  <TimePickerAmPm
                     id="w-birthtime"
-                    type="time"
                     value={draft.birthTime || ""}
-                    onChange={(e) => set("birthTime", e.target.value)}
+                    onChange={(val) => set("birthTime", val)}
                   />
-                </FormField>
-                {txt("birthPlace", "Place of birth", "e.g. Lucknow, UP")}
-                {txt("nakshatra", "Nakshatra", "e.g. Rohini")}
-              </div>
+              </FormField>
+              {txt("birthPlace", "Place of birth", "e.g. Lucknow, UP")}
+              {txt("nakshatra", "Nakshatra", "e.g. Rohini")}
             </div>
+          </div>
         </div>
 
         {/* Step 1: Location & Relocation */}
@@ -419,230 +419,230 @@ function ProfileWizard() {
         {/* Step 2: Education & Career */}
         <div className={cn("grid gap-5 sm:grid-cols-2", step !== 2 && "hidden")}>
           {sel("educationLevel", "Education level", EDUCATION_LEVELS)}
-            {sel("qualification", "Highest qualification *", QUALIFICATIONS)}
-            {txt("educationField", "Field of study / Specialization", "e.g. Computer Science")}
-            {txt("college", "College / University")}
-            {sel("employmentType", "Employment type", EMPLOYMENT_TYPES)}
-            {sel("occupation", "Occupation *", OCCUPATIONS)}
-            {txt("designation", "Designation / Role", "e.g. Senior Software Architect")}
-            {txt("company", "Company / Organisation")}
-            {sel("income", "Annual income *", INCOMES)}
+          {sel("qualification", "Highest qualification *", QUALIFICATIONS)}
+          {txt("educationField", "Field of study / Specialization", "e.g. Computer Science")}
+          {txt("college", "College / University")}
+          {sel("employmentType", "Employment type", EMPLOYMENT_TYPES)}
+          {sel("occupation", "Occupation *", OCCUPATIONS)}
+          {txt("designation", "Designation / Role", "e.g. Senior Software Architect")}
+          {txt("company", "Company / Organisation")}
+          {sel("income", "Annual income *", INCOMES)}
         </div>
 
         {/* Step 3: Family Details */}
         <div className={cn("space-y-6", step !== 3 && "hidden")}>
-            <div className="grid gap-5 sm:grid-cols-2">
-              {sel("familyType", "Family type *", FAMILY_TYPES)}
-              {sel("familyValues", "Family values *", FAMILY_VALUES)}
-              {sel("familyStatus", "Family status", FAMILY_STATUSES)}
-              {txt("fatherOccupation", "Father's occupation", "e.g. Retired bank manager")}
-              {txt("motherOccupation", "Mother's occupation", "e.g. Homemaker")}
-              <FormField id="w-brothers" label="Brothers count">
-                <NativeSelect
-                  id="w-brothers"
-                  value={String(draft.brothersCount ?? 0)}
-                  onChange={(e) => set("brothersCount", Number(e.target.value))}
-                  options={["0", "1", "2", "3", "4+"]}
-                />
-              </FormField>
-              <FormField id="w-sisters" label="Sisters count">
-                <NativeSelect
-                  id="w-sisters"
-                  value={String(draft.sistersCount ?? 0)}
-                  onChange={(e) => set("sistersCount", Number(e.target.value))}
-                  options={["0", "1", "2", "3", "4+"]}
-                />
-              </FormField>
-              <div className="sm:col-span-2">
-                {txt("siblings", "Siblings details", "e.g. 1 elder brother (married)")}
-              </div>
-              <FormField
-                id="w-aboutFamily"
-                label="About family"
-                className="sm:col-span-2"
-                hint="Share details about family roots and traditions."
-              >
-                <Textarea
-                  id="w-aboutFamily"
-                  rows={3}
-                  value={draft.aboutFamily || ""}
-                  onChange={(e) => set("aboutFamily", e.target.value)}
-                />
-              </FormField>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {sel("familyType", "Family type *", FAMILY_TYPES)}
+            {sel("familyValues", "Family values *", FAMILY_VALUES)}
+            {sel("familyStatus", "Family status", FAMILY_STATUSES)}
+            {txt("fatherOccupation", "Father's occupation", "e.g. Retired bank manager")}
+            {txt("motherOccupation", "Mother's occupation", "e.g. Homemaker")}
+            <FormField id="w-brothers" label="Brothers count">
+              <NativeSelect
+                id="w-brothers"
+                value={String(draft.brothersCount ?? 0)}
+                onChange={(e) => set("brothersCount", Number(e.target.value))}
+                options={["0", "1", "2", "3", "4+"]}
+              />
+            </FormField>
+            <FormField id="w-sisters" label="Sisters count">
+              <NativeSelect
+                id="w-sisters"
+                value={String(draft.sistersCount ?? 0)}
+                onChange={(e) => set("sistersCount", Number(e.target.value))}
+                options={["0", "1", "2", "3", "4+"]}
+              />
+            </FormField>
+            <div className="sm:col-span-2">
+              {txt("siblings", "Siblings details", "e.g. 1 elder brother (married)")}
             </div>
+            <FormField
+              id="w-aboutFamily"
+              label="About family"
+              className="sm:col-span-2"
+              hint="Share details about family roots and traditions."
+            >
+              <Textarea
+                id="w-aboutFamily"
+                rows={3}
+                value={draft.aboutFamily || ""}
+                onChange={(e) => set("aboutFamily", e.target.value)}
+              />
+            </FormField>
+          </div>
         </div>
 
         {/* Step 4: Lifestyle & Marriage */}
         <div className={cn("space-y-6", step !== 4 && "hidden")}>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {sel("diet", "Food habits *", DIETS)}
+            {sel("smoking", "Smoking *", HABITS)}
+            {sel("drinking", "Drinking *", HABITS)}
+          </div>
+
+          <div className="pt-4 border-t">
+            <h3 className="font-semibold text-base mb-3">Marriage Expectations</h3>
             <div className="grid gap-5 sm:grid-cols-3">
-              {sel("diet", "Food habits *", DIETS)}
-              {sel("smoking", "Smoking *", HABITS)}
-              {sel("drinking", "Drinking *", HABITS)}
+              {sel("marriageTimeline", "Marriage timeline", MARRIAGE_TIMELINES)}
+              {sel("livingArrangement", "Living arrangement", LIVING_ARRANGEMENTS)}
+              {sel("childrenPreference", "Preference on children", CHILDREN_PREFERENCES)}
             </div>
+          </div>
 
-            <div className="pt-4 border-t">
-              <h3 className="font-semibold text-base mb-3">Marriage Expectations</h3>
-              <div className="grid gap-5 sm:grid-cols-3">
-                {sel("marriageTimeline", "Marriage timeline", MARRIAGE_TIMELINES)}
-                {sel("livingArrangement", "Living arrangement", LIVING_ARRANGEMENTS)}
-                {sel("childrenPreference", "Preference on children", CHILDREN_PREFERENCES)}
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-sm font-medium">Hobbies & interests</p>
-              <ChipSelect
-                label="Hobbies"
-                options={HOBBIES}
-                value={draft.hobbies}
-                onChange={(v) => set("hobbies", v)}
-              />
-            </div>
-            <FormField
+          <div>
+            <p className="mb-2 text-sm font-medium">Hobbies & interests</p>
+            <ChipSelect
+              label="Hobbies"
+              options={HOBBIES}
+              value={draft.hobbies}
+              onChange={(v) => set("hobbies", v)}
+            />
+          </div>
+          <FormField
+            id="w-about"
+            label="About me"
+            error={errors.about}
+            hint={`${draft.about.length}/600 — Do not include phone numbers or email.`}
+          >
+            <Textarea
               id="w-about"
-              label="About me"
-              error={errors.about}
-              hint={`${draft.about.length}/600 — Do not include phone numbers or email.`}
-            >
-              <Textarea
-                id="w-about"
-                rows={5}
-                value={draft.about}
-                onChange={(e) => set("about", e.target.value)}
-              />
-            </FormField>
+              rows={5}
+              value={draft.about}
+              onChange={(e) => set("about", e.target.value)}
+            />
+          </FormField>
         </div>
 
         {/* Step 5: Partner preferences */}
         <div className={cn("space-y-6", step !== 5 && "hidden")}>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <FormField id="w-age" label="Preferred age" error={errors["prefs.age"]}>
-                <div className="grid grid-cols-2 gap-2">
-                  <NativeSelect
-                    aria-label="Minimum age"
-                    value={String(draft.prefs.ageMin)}
-                    onChange={(e) => setPref("ageMin", Number(e.target.value))}
-                    options={ages}
-                  />
-                  <NativeSelect
-                    aria-label="Maximum age"
-                    value={String(draft.prefs.ageMax)}
-                    onChange={(e) => setPref("ageMax", Number(e.target.value))}
-                    options={ages}
-                  />
-                </div>
-              </FormField>
-              <FormField id="w-ph" label="Preferred height" error={errors["prefs.height"]}>
-                <div className="grid grid-cols-2 gap-2">
-                  <NativeSelect
-                    aria-label="Minimum height"
-                    value={String(draft.prefs.heightMin)}
-                    onChange={(e) => setPref("heightMin", Number(e.target.value))}
-                    options={heights}
-                  />
-                  <NativeSelect
-                    aria-label="Maximum height"
-                    value={String(draft.prefs.heightMax)}
-                    onChange={(e) => setPref("heightMax", Number(e.target.value))}
-                    options={heights}
-                  />
-                </div>
-              </FormField>
-              <FormField id="w-pedu" label="Preferred education">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField id="w-age" label="Preferred age" error={errors["prefs.age"]}>
+              <div className="grid grid-cols-2 gap-2">
                 <NativeSelect
-                  id="w-pedu"
-                  value={draft.prefs.education}
-                  onChange={(e) => setPref("education", e.target.value)}
-                  placeholder="Any"
-                  options={QUALIFICATIONS}
+                  aria-label="Minimum age"
+                  value={String(draft.prefs.ageMin)}
+                  onChange={(e) => setPref("ageMin", Number(e.target.value))}
+                  options={ages}
                 />
-              </FormField>
-              <FormField id="w-pocc" label="Preferred occupation">
                 <NativeSelect
-                  id="w-pocc"
-                  value={draft.prefs.occupation}
-                  onChange={(e) => setPref("occupation", e.target.value)}
-                  placeholder="Any"
-                  options={OCCUPATIONS}
+                  aria-label="Maximum age"
+                  value={String(draft.prefs.ageMax)}
+                  onChange={(e) => setPref("ageMax", Number(e.target.value))}
+                  options={ages}
                 />
-              </FormField>
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-medium">
-                Religion{" "}
-                <span className="font-normal text-muted-foreground">
-                  (none selected = open to all)
-                </span>
-              </p>
-              <ChipSelect
-                label="Preferred religions"
-                options={RELIGIONS}
-                value={draft.prefs.religions}
-                onChange={(v) => setPref("religions", v)}
+              </div>
+            </FormField>
+            <FormField id="w-ph" label="Preferred height" error={errors["prefs.height"]}>
+              <div className="grid grid-cols-2 gap-2">
+                <NativeSelect
+                  aria-label="Minimum height"
+                  value={String(draft.prefs.heightMin)}
+                  onChange={(e) => setPref("heightMin", Number(e.target.value))}
+                  options={heights}
+                />
+                <NativeSelect
+                  aria-label="Maximum height"
+                  value={String(draft.prefs.heightMax)}
+                  onChange={(e) => setPref("heightMax", Number(e.target.value))}
+                  options={heights}
+                />
+              </div>
+            </FormField>
+            <FormField id="w-pedu" label="Preferred education">
+              <NativeSelect
+                id="w-pedu"
+                value={draft.prefs.education}
+                onChange={(e) => setPref("education", e.target.value)}
+                placeholder="Any"
+                options={QUALIFICATIONS}
               />
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-medium">
-                Location{" "}
-                <span className="font-normal text-muted-foreground">
-                  (none selected = anywhere)
-                </span>
-              </p>
-              <ChipSelect
-                label="Preferred locations"
-                options={CITIES}
-                value={draft.prefs.locations}
-                onChange={(v) => setPref("locations", v)}
+            </FormField>
+            <FormField id="w-pocc" label="Preferred occupation">
+              <NativeSelect
+                id="w-pocc"
+                value={draft.prefs.occupation}
+                onChange={(e) => setPref("occupation", e.target.value)}
+                placeholder="Any"
+                options={OCCUPATIONS}
               />
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-medium">Marital status</p>
-              <ChipSelect
-                label="Preferred marital status"
-                options={MARITAL_STATUSES}
-                value={draft.prefs.maritalStatus}
-                onChange={(v) => setPref("maritalStatus", v)}
-              />
-            </div>
+            </FormField>
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium">
+              Religion{" "}
+              <span className="font-normal text-muted-foreground">
+                (none selected = open to all)
+              </span>
+            </p>
+            <ChipSelect
+              label="Preferred religions"
+              options={RELIGIONS}
+              value={draft.prefs.religions}
+              onChange={(v) => setPref("religions", v)}
+            />
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium">
+              Location{" "}
+              <span className="font-normal text-muted-foreground">
+                (none selected = anywhere)
+              </span>
+            </p>
+            <ChipSelect
+              label="Preferred locations"
+              options={CITIES}
+              value={draft.prefs.locations}
+              onChange={(v) => setPref("locations", v)}
+            />
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium">Marital status</p>
+            <ChipSelect
+              label="Preferred marital status"
+              options={MARITAL_STATUSES}
+              value={draft.prefs.maritalStatus}
+              onChange={(v) => setPref("maritalStatus", v)}
+            />
+          </div>
         </div>
 
         {/* Step 6: Photo & Tone */}
         <div className={cn("space-y-6", step !== 6 && "hidden")}>
-            <div className="text-center sm:text-left">
-              <h2 className="text-2xl font-semibold">Profile Photo & Avatar</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Upload your profile photo. Verified photos increase connection rates by 80%.
-              </p>
-            </div>
+          <div className="text-center sm:text-left">
+            <h2 className="text-2xl font-semibold">Profile Photo & Avatar</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Upload your profile photo. Verified photos increase connection rates by 80%.
+            </p>
+          </div>
 
-            <PhotoUploader
-              currentPhotoUrl={draft.photoUrl}
-              name={draft.name}
-              tone={draft.tone}
-              onPhotoUploaded={(url) => set("photoUrl", url)}
-              onPhotoRemoved={() => set("photoUrl", "")}
-            />
+          <PhotoUploader
+            currentPhotoUrl={draft.photoUrl}
+            name={draft.name}
+            tone={draft.tone}
+            onPhotoUploaded={(url) => set("photoUrl", url)}
+            onPhotoRemoved={() => set("photoUrl", "")}
+          />
 
-            <div className="pt-4 border-t text-center sm:text-left">
-              <p className="mb-2 text-sm font-medium">Avatar Accent Color (Fallback when photo is not shown)</p>
-              <div className="flex flex-wrap justify-center sm:justify-start gap-3" role="radiogroup" aria-label="Placeholder colour">
-                {AVATAR_TONE_CLASSES.map((cls, i) => (
-                  <button
-                    key={cls}
-                    type="button"
-                    role="radio"
-                    aria-checked={draft.tone === i}
-                    aria-label={`Colour ${i + 1}`}
-                    onClick={() => set("tone", i)}
-                    className={cn(
-                      "h-10 w-10 cursor-pointer rounded-full ring-offset-2 ring-offset-card transition",
-                      cls,
-                      draft.tone === i ? "ring-2 ring-gold" : "hover:scale-105",
-                    )}
-                  />
-                ))}
-              </div>
+          <div className="pt-4 border-t text-center sm:text-left">
+            <p className="mb-2 text-sm font-medium">Avatar Accent Color (Fallback when photo is not shown)</p>
+            <div className="flex flex-wrap justify-center sm:justify-start gap-3" role="radiogroup" aria-label="Placeholder colour">
+              {AVATAR_TONE_CLASSES.map((cls, i) => (
+                <button
+                  key={cls}
+                  type="button"
+                  role="radio"
+                  aria-checked={draft.tone === i}
+                  aria-label={`Colour ${i + 1}`}
+                  onClick={() => set("tone", i)}
+                  className={cn(
+                    "h-10 w-10 cursor-pointer rounded-full ring-offset-2 ring-offset-card transition",
+                    cls,
+                    draft.tone === i ? "ring-2 ring-gold" : "hover:scale-105",
+                  )}
+                />
+              ))}
             </div>
+          </div>
         </div>
 
         <div className="mt-8 flex flex-wrap justify-between gap-3 border-t pt-6">

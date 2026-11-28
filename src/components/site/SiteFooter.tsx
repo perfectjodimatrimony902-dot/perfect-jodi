@@ -61,7 +61,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link to="/kundali-matching" className="hover:text-gold transition-colors">
-                  Kundali Matching (पत्रिका मिलान)
+                  Kundali Check & Milan (पत्रिका व मिलान)
                 </Link>
               </li>
               <li>
