@@ -6,6 +6,7 @@ import { Camera, CheckCircle2, Loader2, RefreshCw, Trash2, UploadCloud } from "l
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ProfileAvatar } from "./ProfileAvatar";
+import { PhotoGuidelines } from "./PhotoGuidelines";
 
 interface PhotoUploaderProps {
   currentPhotoUrl?: string;
@@ -274,6 +275,8 @@ export function PhotoUploader({
           </p>
         </div>
       </div>
+
+      <PhotoGuidelines className="pt-2" />
     </div>
   );
 }

@@ -53,7 +53,7 @@ export async function POST(req: Request) {
             { width: 1000, height: 1000, crop: "limit", quality: "auto:good", fetch_format: "auto" },
           ],
         },
-        (error, result) => {
+        (error: unknown, result: any) => {
           if (error || !result) {
             reject(error || new Error("Failed to upload image to Cloudinary."));
           } else {

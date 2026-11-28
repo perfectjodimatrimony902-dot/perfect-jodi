@@ -71,28 +71,31 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md transition-all shadow-xs">
-      <div className="container-page flex h-[84px] items-center justify-between gap-4">
-        <Logo />
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
+      <div className="mx-auto flex h-[84px] w-full max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 gap-2 sm:gap-4">
+        <Logo className="shrink-0" />
+        <nav
+          className="hidden items-center gap-0.5 xl:gap-1.5 2xl:gap-2 lg:flex shrink min-w-0"
+          aria-label="Main"
+        >
           {PUBLIC_NAV.map((l) => (
             <Link
               key={l.to}
               to={l.to}
-              className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
-              activeProps={{ className: "text-primary" }}
+              className="shrink-0 whitespace-nowrap rounded-lg px-2 py-1.5 text-xs font-semibold text-foreground/80 transition-colors hover:bg-primary/5 hover:text-primary xl:px-3 xl:py-2 xl:text-[14px] 2xl:px-3.5 2xl:text-[15px]"
+              activeProps={{ className: "!text-primary font-bold bg-primary/8" }}
             >
               {l.label}
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 xl:gap-3 shrink-0">
           {account ? (
             <>
               {!profile && account.role === "member" && (
                 <Button
                   asChild
                   size="sm"
-                  className="hidden bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 sm:inline-flex"
+                  className="hidden bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 sm:inline-flex whitespace-nowrap shrink-0"
                 >
                   <Link to="/create-profile" className="flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-gold" />
@@ -105,7 +108,7 @@ export function SiteHeader() {
                   asChild
                   variant="ghost"
                   size="icon"
-                  className="relative"
+                  className="relative shrink-0"
                   aria-label={`Notifications (${unread} unread)`}
                 >
                   <Link to="/notifications">
@@ -120,7 +123,7 @@ export function SiteHeader() {
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hidden cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-muted sm:flex">
+                  <button className="hidden cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-muted sm:flex shrink-0">
                     <ProfileAvatar
                       name={account.name}
                       imageUrl={
@@ -129,12 +132,12 @@ export function SiteHeader() {
                       tone={profile?.tone ?? 5}
                       photoUrl={profile?.photoUrl}
                       size="sm"
-                      className="h-8 w-8 text-xs ring-1 ring-offset-1"
+                      className="h-8 w-8 text-xs ring-1 ring-offset-1 shrink-0"
                     />
                     <span className="max-w-28 truncate text-sm font-medium">
                       {account.name.split(" ")[0]}
                     </span>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -176,20 +179,18 @@ export function SiteHeader() {
               </DropdownMenu>
             </>
           ) : (
-            <div className="hidden items-center gap-2.5 sm:flex">
+            <div className="hidden items-center gap-2 xl:gap-3 sm:flex shrink-0">
               <Button
                 asChild
                 variant="ghost"
-                size="default"
-                className="font-semibold text-foreground/85 hover:text-primary rounded-xl px-4"
+                className="whitespace-nowrap shrink-0 font-semibold text-foreground/85 hover:text-primary rounded-xl px-3 xl:px-4 text-xs xl:text-sm h-10"
               >
                 <Link to="/login">Log in</Link>
               </Button>
               <Button
                 asChild
                 variant="gold"
-                size="default"
-                className="rounded-xl font-bold shadow-xs px-5 text-stone-950"
+                className="whitespace-nowrap shrink-0 rounded-xl font-bold shadow-xs px-4 xl:px-5 text-stone-950 text-xs xl:text-sm h-10"
               >
                 <Link to="/register">Register Free</Link>
               </Button>
@@ -197,7 +198,7 @@ export function SiteHeader() {
           )}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
+              <Button variant="ghost" size="icon" className="lg:hidden shrink-0" aria-label="Open menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
