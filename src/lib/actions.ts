@@ -127,6 +127,7 @@ export function syncMongoSession(
     role?: Account["role"];
     membership?: { tier?: MembershipTier } | MembershipTier;
     status?: Account["status"];
+    hasPaidConnectPass?: boolean;
     profileId?: string;
     createdAt?: string;
   },
@@ -164,6 +165,9 @@ export function syncMongoSession(
           ? (user.membership?.tier as MembershipTier) || "free"
           : (user.membership as MembershipTier) || "free",
       status: user.status || "active",
+      hasPaidConnectPass: Boolean(
+        user.hasPaidConnectPass || (existingIndex >= 0 && accounts[existingIndex]?.hasPaidConnectPass),
+      ),
       profileId: profileId ? String(profileId) : undefined,
       createdAt: user.createdAt || now(),
     };
@@ -266,38 +270,54 @@ export function syncMongoSession(
   });
 }
 
-/** Fetches all live approved profiles from MongoDB Atlas and merges into client state */
-export async function syncAllProfilesFromDb(): Promise<Profile[]> {
+let activeSyncProfilesPromise: Promise<Profile[]> | null = null;
+let lastSyncProfilesTime = 0;
+
+/** Fetches all live approved profiles from MongoDB Atlas and merges into client state with in-flight deduplication */
+export async function syncAllProfilesFromDb(force = false): Promise<Profile[]> {
   if (typeof window === "undefined") return [];
-  try {
-    const res = await fetch("/api/profiles", { cache: "no-store" });
-    if (!res.ok) {
-      console.warn("Profiles sync response status:", res.status);
-      return [];
-    }
-    const data = await res.json();
-    if (data.ok && Array.isArray(data.profiles) && data.profiles.length > 0) {
-      const isMongoId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
-      setState((st) => {
-        const atlasMap = new Map<string, Profile>(data.profiles.map((p: Profile) => [p.id, p]));
-        const atlasOwnerIds = new Set(data.profiles.map((p: Profile) => p.ownerId));
-
-        // Preserve mock seed profiles that do not collide with MongoDB Atlas profiles
-        const nonAtlasProfiles = st.profiles.filter(
-          (p) => !atlasMap.has(p.id) && !atlasOwnerIds.has(p.ownerId) && !isMongoId(p.id),
-        );
-
-        return {
-          ...st,
-          profiles: [...data.profiles, ...nonAtlasProfiles],
-        };
-      });
-      return data.profiles;
-    }
-  } catch (err: unknown) {
-    console.warn("Failed to sync live profiles from database:", err instanceof Error ? err.message : err);
+  const nowTime = Date.now();
+  if (!force && activeSyncProfilesPromise) return activeSyncProfilesPromise;
+  if (!force && nowTime - lastSyncProfilesTime < 10000) {
+    return getState().profiles;
   }
-  return [];
+  lastSyncProfilesTime = nowTime;
+
+  activeSyncProfilesPromise = (async () => {
+    try {
+      const res = await fetch("/api/profiles", { cache: "no-store" });
+      if (!res.ok) {
+        console.warn("Profiles sync response status:", res.status);
+        return getState().profiles;
+      }
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.profiles) && data.profiles.length > 0) {
+        const isMongoId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
+        setState((st) => {
+          const atlasMap = new Map<string, Profile>(data.profiles.map((p: Profile) => [p.id, p]));
+          const atlasOwnerIds = new Set(data.profiles.map((p: Profile) => p.ownerId));
+
+          // Preserve mock seed profiles that do not collide with MongoDB Atlas profiles
+          const nonAtlasProfiles = st.profiles.filter(
+            (p) => !atlasMap.has(p.id) && !atlasOwnerIds.has(p.ownerId) && !isMongoId(p.id),
+          );
+
+          return {
+            ...st,
+            profiles: [...data.profiles, ...nonAtlasProfiles],
+          };
+        });
+        return data.profiles;
+      }
+    } catch (err: unknown) {
+      console.warn("Failed to sync live profiles from database:", err instanceof Error ? err.message : err);
+    } finally {
+      activeSyncProfilesPromise = null;
+    }
+    return getState().profiles;
+  })();
+
+  return activeSyncProfilesPromise;
 }
 
 export interface RegisterInput {
@@ -665,6 +685,8 @@ export function markAllNotificationsRead() {
  */
 export async function syncNotificationsFromDb(): Promise<void> {
   if (typeof window === "undefined") return;
+  const token = localStorage.getItem("pj_token") || localStorage.getItem("pj_jwt_token");
+  if (!token) return;
   try {
     const res = await fetch("/api/notifications", { cache: "no-store" });
     if (!res.ok) return;
@@ -713,6 +735,8 @@ export async function syncNotificationsFromDb(): Promise<void> {
  */
 export async function syncInterestsFromDb(): Promise<void> {
   if (typeof window === "undefined") return;
+  const token = localStorage.getItem("pj_token") || localStorage.getItem("pj_jwt_token");
+  if (!token) return;
   try {
     const res = await fetch("/api/interests", { cache: "no-store" });
     if (!res.ok) return;

@@ -16,6 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { MembershipBadge } from "@/components/common/StatusBadge";
+import { ConnectPaymentModal } from "@/components/payment/ConnectPaymentModal";
 import { getProfilePhoto } from "@/data/profile-photos";
 import { useSession } from "@/hooks/use-demo";
 import { sendInterest, toggleShortlist } from "@/lib/actions";
@@ -41,6 +42,7 @@ export function ProfileCard({
   const { state, account } = useSession();
   const navigate = useNavigate();
   const [sending, setSending] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const owner = state.accounts.find((a) => a.id === profile.ownerId);
   const shortlisted = account ? (state.shortlists[account.id] ?? []).includes(profile.id) : false;
@@ -77,6 +79,10 @@ export function ProfileCard({
     }
   };
 
+  const hasPaid =
+    Boolean(account?.hasPaidConnectPass) ||
+    Boolean(account?.membership && account.membership !== "free");
+
   const onSendInterest = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!account) {
@@ -88,14 +94,16 @@ export function ProfileCard({
       toast.info("Admin accounts cannot send member interests.");
       return;
     }
-    setSending(true);
-    const r = sendInterest(profile.id);
-    setSending(false);
-    if (r.ok) {
-      toast.success(`Interest sent to ${profile.name}! They will be notified.`);
-    } else {
-      toast.info(r.error);
+    if (hasPaid) {
+      const res = sendInterest(profile.id, profile.ownerId);
+      if (res.ok) {
+        toast.success(`Interest sent to ${profile.name}!`);
+      } else {
+        toast.info(res.error || "Interest already sent.");
+      }
+      return;
     }
+    setShowPaymentModal(true);
   };
 
   return (
@@ -320,6 +328,12 @@ export function ProfileCard({
               </div>
             </div>
       </div>
+
+      <ConnectPaymentModal
+        open={showPaymentModal}
+        onOpenChange={setShowPaymentModal}
+        targetProfile={profile}
+      />
     </article>
   );
 }

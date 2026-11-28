@@ -104,6 +104,7 @@ export interface Account {
   profileId?: string;
   createdAt: string;
   prefs?: Partial<AccountPrefs>;
+  hasPaidConnectPass?: boolean;
 }
 
 export interface AccountPrefs {

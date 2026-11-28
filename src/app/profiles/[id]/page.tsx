@@ -59,6 +59,7 @@ import {
   VerifiedBadge,
 } from "@/components/common/StatusBadge";
 import { MatchCompatibilityDialog } from "@/components/profile/MatchCompatibilityDialog";
+import { ConnectPaymentModal } from "@/components/payment/ConnectPaymentModal";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { getProfileGallery, getProfilePhoto } from "@/data/profile-photos";
 import { formatDate, useSession } from "@/hooks/use-demo";
@@ -150,6 +151,7 @@ export default function ProfileDetailPage() {
 
   const owner = state.accounts.find((a) => a.id === profile.ownerId);
   const shortlisted = account ? (state.shortlists[account.id] ?? []).includes(profile.id) : false;
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const compat =
     me && !isMine && me.gender !== profile.gender ? compatibility(me, profile) : undefined;
   const completion = profileCompletion(profile);
@@ -159,12 +161,22 @@ export default function ProfileDetailPage() {
     navigate({ to: "/login", search: { redirect: `/profiles/${profile.id}` } });
   };
 
+  const hasPaid =
+    Boolean(account?.hasPaidConnectPass) ||
+    Boolean(account?.membership && account.membership !== "free");
+
   const onInterest = () => {
-    if (!account) return requireLogin("Please log in to send an interest.");
+    if (!account) return requireLogin("Please log in to send a connection request.");
     if (isAdmin) return toast.info("Admins can't send interests.");
-    const r = sendInterest(profile.id);
-    if (r.ok) toast.success(`Interest sent to ${profile.name}.`);
-    else toast.error(r.error);
+
+    if (hasPaid) {
+      const r = sendInterest(profile.id, profile.ownerId);
+      if (r.ok) toast.success(`Interest sent to ${profile.name}.`);
+      else toast.info(r.error || "Interest already sent.");
+      return;
+    }
+
+    setShowPaymentModal(true);
   };
 
   const onShortlist = () => {
@@ -1160,6 +1172,12 @@ export default function ProfileDetailPage() {
               interestSent={sentByMe}
             />
           )}
+
+          <ConnectPaymentModal
+            open={showPaymentModal}
+            onOpenChange={setShowPaymentModal}
+            targetProfile={profile}
+          />
         </div>
         );
 }
