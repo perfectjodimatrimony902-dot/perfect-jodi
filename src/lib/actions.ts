@@ -291,20 +291,19 @@ export async function syncAllProfilesFromDb(force = false): Promise<Profile[]> {
         return getState().profiles;
       }
       const data = await res.json();
-      if (data.ok && Array.isArray(data.profiles) && data.profiles.length > 0) {
+      if (data.ok && Array.isArray(data.profiles)) {
         const isMongoId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
         setState((st) => {
           const atlasMap = new Map<string, Profile>(data.profiles.map((p: Profile) => [p.id, p]));
-          const atlasOwnerIds = new Set(data.profiles.map((p: Profile) => p.ownerId));
 
-          // Preserve mock seed profiles that do not collide with MongoDB Atlas profiles
-          const nonAtlasProfiles = st.profiles.filter(
-            (p) => !atlasMap.has(p.id) && !atlasOwnerIds.has(p.ownerId) && !isMongoId(p.id),
+          // Only keep local profiles if they are real MongoDB profiles created in this active session
+          const localRealProfiles = st.profiles.filter(
+            (p) => !atlasMap.has(p.id) && isMongoId(p.id),
           );
 
           return {
             ...st,
-            profiles: [...data.profiles, ...nonAtlasProfiles],
+            profiles: [...data.profiles, ...localRealProfiles],
           };
         });
         return data.profiles;

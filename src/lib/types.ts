@@ -29,6 +29,8 @@ export interface Profile {
   id: string;
   ownerId: string;
   name: string;
+  email?: string;
+  mobile?: string;
   gender: Gender;
   dob: string;
   photoUrl?: string;

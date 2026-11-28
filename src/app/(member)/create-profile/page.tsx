@@ -1,8 +1,8 @@
 "use client";
 
 import { Link, useNavigate } from "@/lib/navigation";
-import { ArrowLeft, ArrowRight, Check, Sparkles, User, Heart, MapPin, Briefcase, Users, Calendar } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, ArrowRight, Check, Sparkles, User, Heart, MapPin, Briefcase, Users, Calendar, RotateCcw, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { NativeSelect } from "@/components/common/NativeSelect";
 import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { AVATAR_TONE_CLASSES, ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { PhotoUploader } from "@/components/profile/PhotoUploader";
+import { DraftProfilePreviewModal } from "@/components/profile/DraftProfilePreviewModal";
 import { useSession } from "@/hooks/use-demo";
 import { syncAllProfilesFromDb, syncMongoSession } from "@/lib/actions";
 import { shortHeight, formatHeight } from "@/lib/matching";
@@ -64,18 +65,16 @@ const STEPS = [
 
 type Errors = Record<string, string>;
 
-export default function CreateProfilePage() {
-  const { account, profile } = useSession();
-  const navigate = useNavigate();
+const DRAFT_STORAGE_KEY = "pj_create_profile_draft";
+const STEP_STORAGE_KEY = "pj_create_profile_step";
 
-  const [step, setStep] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Errors>({});
-
-  const [draft, setDraft] = useState<Profile>({
+function getDefaultDraft(account: any, profile: any): Profile {
+  return {
     id: profile?.id || "",
     ownerId: account?.id || "",
     name: profile?.name || account?.name || "",
+    email: profile?.email || "",
+    mobile: profile?.mobile || "",
     gender: (profile?.gender as any) || account?.gender || "male",
     dob: profile?.dob || account?.dob || "1996-05-15",
     photoUrl: profile?.photoUrl || "",
@@ -144,7 +143,91 @@ export default function CreateProfilePage() {
     verified: true,
     createdBy: profile?.createdBy || account?.createdBy || "Self",
     createdAt: profile?.createdAt || new Date().toISOString(),
+  };
+}
+
+export default function CreateProfilePage() {
+  const { account, profile } = useSession();
+  const navigate = useNavigate();
+
+  const [step, setStep] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(STEP_STORAGE_KEY);
+        if (saved !== null) {
+          const parsed = parseInt(saved, 10);
+          if (!isNaN(parsed) && parsed >= 0 && parsed < STEPS.length) return parsed;
+        }
+      } catch {}
+    }
+    return 0;
   });
+
+  const [submitting, setSubmitting] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [errors, setErrors] = useState<Errors>({});
+
+  const [draft, setDraft] = useState<Profile>(() => {
+    const base = getDefaultDraft(account, profile);
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") {
+            return {
+              ...base,
+              ...parsed,
+              prefs: { ...base.prefs, ...(parsed.prefs || {}) },
+            };
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load stored profile draft:", err);
+      }
+    }
+    return base;
+  });
+
+  // Keep draft updated with ownerId and name when account session hydrates
+  useEffect(() => {
+    if (account?.id) {
+      setDraft((prev) => ({
+        ...prev,
+        ownerId: prev.ownerId || account.id,
+        name: prev.name || account.name || "",
+      }));
+    }
+  }, [account]);
+
+  // Persist draft to localStorage on any change so data is never lost
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch (e) {
+      console.warn("Failed to auto-save profile draft:", e);
+    }
+  }, [draft]);
+
+  // Persist step to localStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(STEP_STORAGE_KEY, String(step));
+    } catch {}
+  }, [step]);
+
+  const clearDraft = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      localStorage.removeItem(STEP_STORAGE_KEY);
+    }
+    setDraft(getDefaultDraft(account, profile));
+    setStep(0);
+    setErrors({});
+    toast.success("Form cleared. Starting fresh.");
+  };
 
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) =>
     setDraft((prev) => ({ ...prev, [k]: v }));
@@ -161,6 +244,12 @@ export default function CreateProfilePage() {
 
     if (s === 0) {
       if (draft.name.trim().length < 3) e.name = "Enter your full name";
+      if (!draft.mobile || !/^[6-9]\d{9}$/.test(draft.mobile.trim())) {
+        e.mobile = "Enter a valid 10-digit Indian mobile number";
+      }
+      if (!draft.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim())) {
+        e.email = "Enter a valid email address";
+      }
       req("dob", "Date of birth is required");
       req("heightCm", "Select height");
       req("maritalStatus", "Select marital status");
@@ -262,6 +351,10 @@ export default function CreateProfilePage() {
       }
 
       toast.success("Congratulations! Your matrimonial profile is created & active.");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+        localStorage.removeItem(STEP_STORAGE_KEY);
+      }
       navigate({ to: "/dashboard" });
     } catch {
       setSubmitting(false);
@@ -274,6 +367,10 @@ export default function CreateProfilePage() {
       } catch (syncErr) {
         console.warn("Profiles sync notice:", syncErr);
       }
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+        localStorage.removeItem(STEP_STORAGE_KEY);
+      }
       toast.success("Profile saved!");
       navigate({ to: "/dashboard" });
     }
@@ -284,6 +381,17 @@ export default function CreateProfilePage() {
       <MemberPageTitle
         title="Create Your Matrimonial Profile"
         text="A complete and detailed profile gets 5x more relevant responses from suitable matches."
+        action={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPreviewModal(true)}
+            className="gap-2 cursor-pointer font-medium border-primary/40 text-primary hover:bg-primary/5 shadow-xs"
+          >
+            <Eye className="h-4 w-4" /> Live Biodata Preview
+          </Button>
+        }
       />
 
       {/* Steps indicator */}
@@ -293,7 +401,17 @@ export default function CreateProfilePage() {
             Step {step + 1} of {STEPS.length}:{" "}
             <strong className="text-foreground">{STEPS[step]}</strong>
           </span>
-          <span>{Math.round(((step + 1) / STEPS.length) * 100)}% Complete</span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={clearDraft}
+              className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
+              title="Reset form and start fresh"
+            >
+              <RotateCcw className="h-3 w-3" /> Reset
+            </button>
+            <span>{Math.round(((step + 1) / STEPS.length) * 100)}% Complete</span>
+          </div>
         </div>
         <Progress value={((step + 1) / STEPS.length) * 100} className="mt-2.5 h-2 bg-muted" />
 
@@ -321,16 +439,15 @@ export default function CreateProfilePage() {
 
       <div className="surface p-6 md:p-8">
         {/* Step 0: Personal & Astrology */}
-        {step === 0 && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="font-display text-2xl font-semibold text-foreground">
-                Personal & Horoscope Details
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Provide your basic personal identity and astrology/horoscope details for kundali matching.
-              </p>
-            </div>
+        <div className={cn("space-y-6", step !== 0 && "hidden")}>
+          <div>
+            <h2 className="font-display text-2xl font-semibold text-foreground">
+              Personal & Horoscope Details
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Provide your basic personal identity and astrology/horoscope details for kundali matching.
+            </p>
+          </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <FormField id="cp-name" label="Full Name *" error={errors.name}>
@@ -348,6 +465,43 @@ export default function CreateProfilePage() {
                   value={draft.gender}
                   onChange={(e) => set("gender", e.target.value as any)}
                   options={["female", "male"]}
+                />
+              </FormField>
+
+              <FormField
+                id="cp-mobile"
+                label="Candidate Contact Mobile *"
+                error={errors.mobile}
+                hint="Dedicated contact number for matches (can differ from registration mobile)"
+              >
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">
+                    +91
+                  </span>
+                  <Input
+                    id="cp-mobile"
+                    type="tel"
+                    maxLength={10}
+                    value={draft.mobile || ""}
+                    onChange={(e) => set("mobile", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    placeholder="9876543210"
+                    className="pl-11"
+                  />
+                </div>
+              </FormField>
+
+              <FormField
+                id="cp-email"
+                label="Candidate Contact Email *"
+                error={errors.email}
+                hint="Direct email address for candidate communications"
+              >
+                <Input
+                  id="cp-email"
+                  type="email"
+                  value={draft.email || ""}
+                  onChange={(e) => set("email", e.target.value.trim().toLowerCase())}
+                  placeholder="e.g. candidate@example.com"
                 />
               </FormField>
 
@@ -508,12 +662,10 @@ export default function CreateProfilePage() {
                 </FormField>
               </div>
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Step 1: Location & Relocation */}
-        {step === 1 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 1 && "hidden")}>
             <div>
               <h2 className="font-display text-2xl font-semibold text-foreground">
                 Location & Relocation Details
@@ -569,12 +721,10 @@ export default function CreateProfilePage() {
                 />
               </FormField>
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Step 2: Education & Career */}
-        {step === 2 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 2 && "hidden")}>
             <div>
               <h2 className="font-display text-2xl font-semibold text-foreground">
                 Education & Career Details
@@ -670,12 +820,10 @@ export default function CreateProfilePage() {
                 />
               </FormField>
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Step 3: Family Details */}
-        {step === 3 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 3 && "hidden")}>
             <div>
               <h2 className="font-display text-2xl font-semibold text-foreground">
                 Family Background
@@ -774,12 +922,10 @@ export default function CreateProfilePage() {
                 />
               </FormField>
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Step 4: Lifestyle & Marriage Expectations */}
-        {step === 4 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 4 && "hidden")}>
             <div>
               <h2 className="font-display text-2xl font-semibold text-foreground">
                 Lifestyle, Habits & Marriage Expectations
@@ -880,12 +1026,10 @@ export default function CreateProfilePage() {
                 placeholder="Share a short bio to let prospective partners know more about you..."
               />
             </FormField>
-          </div>
-        )}
+        </div>
 
         {/* Step 5: Partner Preferences */}
-        {step === 5 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 5 && "hidden")}>
             <div>
               <h2 className="font-display text-2xl font-semibold text-foreground">
                 Partner Preferences
@@ -959,19 +1103,27 @@ export default function CreateProfilePage() {
                 onChange={(l) => setPref("locations", l)}
               />
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Step 6: Profile Photo & Preview */}
-        {step === 6 && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="font-display text-2xl font-semibold text-foreground">
-                Profile Photo & Preview
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Upload a genuine profile photo saved directly to Cloudinary, configure your preferences, and verify your details before publishing.
-              </p>
+        <div className={cn("space-y-6", step !== 6 && "hidden")}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-display text-2xl font-semibold text-foreground">
+                  Profile Photo & Preview
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Upload a genuine profile photo saved directly to Cloudinary, configure your preferences, and verify your details before publishing.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowPreviewModal(true)}
+                className="gap-2 shrink-0 border-gold/60 text-gold-foreground font-semibold hover:bg-gold/10 shadow-xs cursor-pointer"
+              >
+                <Eye className="h-4 w-4 text-gold" /> Full Biodata Preview
+              </Button>
             </div>
 
             {/* Cloudinary Photo Uploader */}
@@ -1057,7 +1209,7 @@ export default function CreateProfilePage() {
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3 pt-4 border-t text-xs">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-4 border-t text-xs">
                 <div className="rounded-lg bg-background p-3 border">
                   <div className="font-semibold text-foreground">Education & Career</div>
                   <div className="text-muted-foreground mt-1">
@@ -1087,6 +1239,16 @@ export default function CreateProfilePage() {
                     Relocation: {draft.willingToRelocate || "Flexible"}
                   </div>
                 </div>
+
+                <div className="rounded-lg bg-background p-3 border">
+                  <div className="font-semibold text-foreground">Contact & Identity</div>
+                  <div className="text-muted-foreground mt-1">
+                    📱 +91 {draft.mobile || "Not specified"}
+                  </div>
+                  <div className="text-muted-foreground truncate">
+                    ✉️ {draft.email || "Not specified"}
+                  </div>
+                </div>
               </div>
 
               {draft.about && (
@@ -1096,11 +1258,10 @@ export default function CreateProfilePage() {
                 </div>
               )}
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Navigation Buttons */}
-        <div className="mt-8 flex items-center justify-between border-t pt-6">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-6">
           {step > 0 ? (
             <Button variant="outline" onClick={prevStep} disabled={submitting}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Previous
@@ -1109,22 +1270,42 @@ export default function CreateProfilePage() {
             <div />
           )}
 
-          {step < STEPS.length - 1 ? (
-            <Button onClick={nextStep}>
-              Next <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
+          <div className="flex items-center gap-2">
             <Button
-              onClick={submitProfile}
-              disabled={submitting}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              type="button"
+              variant="outline"
+              onClick={() => setShowPreviewModal(true)}
+              className="gap-1.5 cursor-pointer text-xs sm:text-sm border-gold/40 hover:bg-gold/5"
             >
-              {submitting ? "Saving to Atlas..." : "Publish Profile Now"}
-              <Check className="ml-2 h-4 w-4" />
+              <Eye className="h-4 w-4 text-gold" /> Preview Biodata
             </Button>
-          )}
+
+            {step < STEPS.length - 1 ? (
+              <Button onClick={nextStep}>
+                Next <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={submitProfile}
+                disabled={submitting}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold cursor-pointer"
+              >
+                {submitting ? "Saving to Atlas..." : "Publish Profile Now"}
+                <Check className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Live Profile Preview Modal for first-time profile creation */}
+      <DraftProfilePreviewModal
+        open={showPreviewModal}
+        onOpenChange={setShowPreviewModal}
+        draft={draft}
+        onPublish={submitProfile}
+        submitting={submitting}
+      />
     </div>
   );
 }

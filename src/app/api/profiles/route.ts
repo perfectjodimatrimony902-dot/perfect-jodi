@@ -30,6 +30,8 @@ export async function GET(req: Request) {
       id: doc._id.toString(),
       ownerId: doc.userId ? doc.userId.toString() : doc._id.toString(),
       name: doc.name,
+      email: doc.email || "",
+      mobile: doc.mobile || "",
       gender: doc.gender,
       dob: doc.dob,
       photoUrl: doc.photoUrl || "",
