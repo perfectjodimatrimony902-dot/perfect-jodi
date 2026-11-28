@@ -25,6 +25,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       name,
+      email,
+      mobile,
       gender,
       dob,
       photoUrl,
@@ -101,6 +103,8 @@ export async function POST(req: Request) {
       // Update existing
       Object.assign(existingProfile, {
         name,
+        email: email !== undefined ? String(email).trim() : existingProfile.email,
+        mobile: mobile !== undefined ? String(mobile).trim() : existingProfile.mobile,
         gender,
         dob,
         photoUrl: photoUrl ?? existingProfile.photoUrl ?? "",
@@ -164,6 +168,8 @@ export async function POST(req: Request) {
       existingProfile = await Profile.create({
         userId: user._id,
         name: name.trim(),
+        email: email ? String(email).trim() : "",
+        mobile: mobile ? String(mobile).trim() : "",
         gender,
         dob,
         photoUrl: photoUrl || "",

@@ -3,6 +3,8 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export interface IProfile extends Document {
   userId: mongoose.Types.ObjectId;
   name: string;
+  email?: string;
+  mobile?: string;
   gender: "female" | "male";
   dob: string;
   photoUrl?: string;
@@ -85,6 +87,8 @@ const ProfileSchema = new Schema<IProfile>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
     name: { type: String, required: true, trim: true },
+    email: { type: String, default: "", trim: true },
+    mobile: { type: String, default: "", trim: true },
     gender: { type: String, enum: ["female", "male"], required: true },
     dob: { type: String, required: true },
     photoUrl: { type: String, default: "" },

@@ -75,6 +75,12 @@ function validate(step: number, d: Draft): Errors {
   };
   if (step === 0) {
     if (d.name.trim().length < 3) e.name = "Enter the full name";
+    if (!d.mobile || !/^[6-9]\d{9}$/.test(d.mobile.trim())) {
+      e.mobile = "Enter a valid 10-digit Indian mobile number";
+    }
+    if (!d.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email.trim())) {
+      e.email = "Enter a valid email address";
+    }
     req("dob", "Date of birth is required");
     req("heightCm", "Select height");
     req("maritalStatus", "Select marital status");
@@ -287,9 +293,8 @@ function ProfileWizard() {
 
       <div className="surface mt-6 p-5 md:p-8">
         {/* Step 0: Personal & Horoscope */}
-        {step === 0 && (
-          <div className="space-y-6">
-            <div className="grid gap-5 sm:grid-cols-2">
+        <div className={cn("space-y-6", step !== 0 && "hidden")}>
+          <div className="grid gap-5 sm:grid-cols-2">
               {txt("name", "Full name *")}
               <FormField id="w-dob" label="Date of birth *" error={errors.dob}>
                 <Input
@@ -308,6 +313,43 @@ function ProfileWizard() {
                     { value: "female", label: "Female" },
                     { value: "male", label: "Male" },
                   ]}
+                />
+              </FormField>
+
+              <FormField
+                id="w-mobile"
+                label="Candidate Contact Mobile *"
+                error={errors.mobile}
+                hint="Direct contact phone number for prospective matches"
+              >
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">
+                    +91
+                  </span>
+                  <Input
+                    id="w-mobile"
+                    type="tel"
+                    maxLength={10}
+                    value={draft.mobile || ""}
+                    onChange={(e) => set("mobile", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    placeholder="9876543210"
+                    className="pl-11"
+                  />
+                </div>
+              </FormField>
+
+              <FormField
+                id="w-email"
+                label="Candidate Contact Email *"
+                error={errors.email}
+                hint="Direct email address for candidate communications"
+              >
+                <Input
+                  id="w-email"
+                  type="email"
+                  value={draft.email || ""}
+                  onChange={(e) => set("email", e.target.value.trim().toLowerCase())}
+                  placeholder="candidate@example.com"
                 />
               </FormField>
               <FormField id="w-height" label="Height *" error={errors.heightCm}>
@@ -363,24 +405,20 @@ function ProfileWizard() {
                 {txt("nakshatra", "Nakshatra", "e.g. Rohini")}
               </div>
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Step 1: Location & Relocation */}
-        {step === 1 && (
-          <div className="grid gap-5 sm:grid-cols-2">
-            {sel("country", "Country of residence *", COUNTRIES)}
-            {sel("state", "State", STATES)}
-            {sel("city", "Current city *", CITIES)}
-            {txt("nativePlace", "Native place / Hometown", "e.g. Varanasi, UP")}
-            {sel("willingToRelocate", "Willingness to relocate", RELOCATION_OPTIONS)}
-          </div>
-        )}
+        <div className={cn("grid gap-5 sm:grid-cols-2", step !== 1 && "hidden")}>
+          {sel("country", "Country of residence *", COUNTRIES)}
+          {sel("state", "State", STATES)}
+          {sel("city", "Current city *", CITIES)}
+          {txt("nativePlace", "Native place / Hometown", "e.g. Varanasi, UP")}
+          {sel("willingToRelocate", "Willingness to relocate", RELOCATION_OPTIONS)}
+        </div>
 
         {/* Step 2: Education & Career */}
-        {step === 2 && (
-          <div className="grid gap-5 sm:grid-cols-2">
-            {sel("educationLevel", "Education level", EDUCATION_LEVELS)}
+        <div className={cn("grid gap-5 sm:grid-cols-2", step !== 2 && "hidden")}>
+          {sel("educationLevel", "Education level", EDUCATION_LEVELS)}
             {sel("qualification", "Highest qualification *", QUALIFICATIONS)}
             {txt("educationField", "Field of study / Specialization", "e.g. Computer Science")}
             {txt("college", "College / University")}
@@ -389,12 +427,10 @@ function ProfileWizard() {
             {txt("designation", "Designation / Role", "e.g. Senior Software Architect")}
             {txt("company", "Company / Organisation")}
             {sel("income", "Annual income *", INCOMES)}
-          </div>
-        )}
+        </div>
 
         {/* Step 3: Family Details */}
-        {step === 3 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 3 && "hidden")}>
             <div className="grid gap-5 sm:grid-cols-2">
               {sel("familyType", "Family type *", FAMILY_TYPES)}
               {sel("familyValues", "Family values *", FAMILY_VALUES)}
@@ -434,12 +470,10 @@ function ProfileWizard() {
                 />
               </FormField>
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Step 4: Lifestyle & Marriage */}
-        {step === 4 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 4 && "hidden")}>
             <div className="grid gap-5 sm:grid-cols-3">
               {sel("diet", "Food habits *", DIETS)}
               {sel("smoking", "Smoking *", HABITS)}
@@ -477,12 +511,10 @@ function ProfileWizard() {
                 onChange={(e) => set("about", e.target.value)}
               />
             </FormField>
-          </div>
-        )}
+        </div>
 
         {/* Step 5: Partner preferences */}
-        {step === 5 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 5 && "hidden")}>
             <div className="grid gap-5 sm:grid-cols-2">
               <FormField id="w-age" label="Preferred age" error={errors["prefs.age"]}>
                 <div className="grid grid-cols-2 gap-2">
@@ -572,12 +604,10 @@ function ProfileWizard() {
                 onChange={(v) => setPref("maritalStatus", v)}
               />
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Step 6: Photo & Tone */}
-        {step === 6 && (
-          <div className="space-y-6">
+        <div className={cn("space-y-6", step !== 6 && "hidden")}>
             <div className="text-center sm:text-left">
               <h2 className="text-2xl font-semibold">Profile Photo & Avatar</h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -613,8 +643,7 @@ function ProfileWizard() {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+        </div>
 
         <div className="mt-8 flex flex-wrap justify-between gap-3 border-t pt-6">
           <Button variant="outline" onClick={() => go(step - 1)} disabled={step === 0 || saving}>
