@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { Profile } from "@/models/Profile";
+import { Payment } from "@/models/Payment";
 import { getCurrentUserFromToken, verifyJwt } from "@/lib/jwt";
 
 export async function GET(req: Request) {
@@ -40,6 +41,12 @@ export async function GET(req: Request) {
 
       const hasProfile = Boolean(profile);
 
+      // Check if user has already paid the one-time connect fee
+      const hasPaid =
+        Boolean(user.hasPaidConnectPass) ||
+        (user.membership?.tier && user.membership.tier !== "free") ||
+        Boolean(await Payment.exists({ userId: user._id, status: "paid" }));
+
       return NextResponse.json({
         ok: true,
         user: {
@@ -51,11 +58,13 @@ export async function GET(req: Request) {
           dob: user.dob,
           role: user.role,
           membership: user.membership,
+          hasPaidConnectPass: hasPaid,
           hasProfile,
           profileId: profile?._id?.toString(),
         },
         profile,
         hasProfile,
+        hasPaidConnectPass: hasPaid,
         token: activeToken,
       });
     } catch (error: unknown) {

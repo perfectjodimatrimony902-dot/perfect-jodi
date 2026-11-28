@@ -17,6 +17,7 @@ export interface IUser extends Document {
     tier: "free" | "gold" | "premium";
     validUntil?: string;
   };
+  hasPaidConnectPass?: boolean;
   profileId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -51,6 +52,7 @@ const UserSchema = new Schema<IUser>(
       tier: { type: String, enum: ["free", "gold", "premium"], default: "free" },
       validUntil: { type: String },
     },
+    hasPaidConnectPass: { type: Boolean, default: false },
     profileId: { type: Schema.Types.ObjectId, ref: "Profile" },
   },
   {

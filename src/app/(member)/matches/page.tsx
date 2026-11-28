@@ -24,6 +24,7 @@ import { NativeSelect } from "@/components/common/NativeSelect";
 import { MemberPageTitle } from "@/components/member/MemberPageTitle";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { MatchCompatibilityDialog } from "@/components/profile/MatchCompatibilityDialog";
+import { ConnectPaymentModal } from "@/components/payment/ConnectPaymentModal";
 import { useSession } from "@/hooks/use-demo";
 import { sendInterest, toggleShortlist, syncAllProfilesFromDb } from "@/lib/actions";
 import {
@@ -54,6 +55,7 @@ export default function MatchesPage() {
     compat: Compatibility;
     defaultTab?: "overview" | "kundali";
   } | null>(null);
+  const [paymentTargetProfile, setPaymentTargetProfile] = useState<Profile | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Sync latest live profiles from MongoDB Atlas on mount
@@ -113,9 +115,25 @@ export default function MatchesPage() {
     );
   }
 
+  const hasPaid =
+    Boolean(account?.hasPaidConnectPass) ||
+    Boolean(account?.membership && account.membership !== "free");
+
   const handleSendInterest = (targetId: string) => {
-    sendInterest(profile.id, targetId);
-    toast.success("Interest sent successfully!");
+    const target = all.find((p) => p.id === targetId) || selectedMatch?.profile;
+    if (hasPaid) {
+      const res = sendInterest(targetId, target?.ownerId);
+      if (res.ok) {
+        toast.success(`Interest sent to ${target?.name || "match"}!`);
+      } else {
+        toast.info(res.error || "Interest already sent.");
+      }
+      return;
+    }
+
+    if (target) {
+      setPaymentTargetProfile(target);
+    }
   };
 
   const hasSentInterest = (targetId: string) => {
@@ -383,6 +401,14 @@ export default function MatchesPage() {
           defaultTab={selectedMatch.defaultTab || (tab === "kundali" ? "kundali" : "overview")}
           onSendInterest={() => handleSendInterest(selectedMatch.profile.id)}
           interestSent={hasSentInterest(selectedMatch.profile.id)}
+        />
+      )}
+
+      {paymentTargetProfile && (
+        <ConnectPaymentModal
+          open={Boolean(paymentTargetProfile)}
+          onOpenChange={(open) => !open && setPaymentTargetProfile(null)}
+          targetProfile={paymentTargetProfile}
         />
       )}
     </div>

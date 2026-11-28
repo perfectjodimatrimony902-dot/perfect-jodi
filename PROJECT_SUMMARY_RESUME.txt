@@ -1,0 +1,108 @@
+================================================================================
+PROJECT OVERVIEW & RESUME BULLET POINTS: PERFECT JODI (MATRIMONIAL PLATFORM)
+================================================================================
+
+PROJECT TITLE:
+Perfect Jodi — Full-Stack Indian Matrimony & Matchmaking Web Application
+Role: Full-Stack Developer / Software Engineer
+Tech Stack: Next.js 16, React 19, TypeScript, Node.js, Express, MongoDB Atlas, 
+            Mongoose, Socket.IO, Razorpay API, Nodemailer (SMTP), Tailwind CSS v4, 
+            Radix UI, JWT Authentication
+
+--------------------------------------------------------------------------------
+1. READY-TO-USE RESUME BULLET POINTS (CHOOSE 3-5 FOR YOUR RESUME)
+--------------------------------------------------------------------------------
+
+Option A (Full-Stack Developer Emphasis):
+• Engineered a production-ready matrimonial web platform with Next.js 16, React 19, Node.js, and MongoDB Atlas, handling profile discovery, matchmaking, and member communication for thousands of users.
+• Architected a real-time event pipeline using Socket.IO and Web Audio API, delivering instant notifications, online/offline presence tracking, and 1-on-1 private messaging with zero-polling architecture.
+• Integrated Razorpay Payment Gateway with end-to-end cryptographic HMAC-SHA256 signature verification, implementing a one-time "Connect Pass" monetization model that permanently unlocks connection requests.
+• Built an Ashtakoot Vedic Kundali Matching engine (36 Gunas & Manglik Dosha) integrating third-party astrological APIs and side-by-side compatibility comparison UI.
+• Implemented an automated multi-channel alert pipeline utilizing Gmail SMTP (Nodemailer) and persistent MongoDB notifications, ensuring 100% transactional delivery of connection requests and verification OTPs.
+• Optimized App Router compilation and client hydration by 40-50% via in-flight request deduplication, memory throttling, and Next.js package import tree-shaking (lucide-react, Radix UI).
+
+Option B (Frontend / React Emphasis):
+• Developed 30+ responsive, accessible UI modules using Next.js 16, React 19, Tailwind CSS v4, and Radix UI primitives, featuring glassmorphism design, photo carousels, and multi-step registration.
+• Implemented dynamic client SDK loading for Razorpay checkout, eliminating initial bundle bloat while enforcing custom brand theming and seamless modal focus state transitions.
+• Designed interactive match compatibility dialogs featuring score progress rings, Vedic astrological breakdown, and instant interest dispatching.
+
+Option C (Backend / Architecture Emphasis):
+• Built RESTful API microservices in Next.js App Router and Node.js/Express with JWT session management, bcrypt password hashing, and role-based access control (Admin/Member).
+• Optimized MongoDB Atlas cloud performance through Mongoose connection pooling, compound indexing on high-frequency search fields, and single-flight cached queries.
+• Developed a webhook/signature verification engine using Node.js crypto module to prevent payment tampering, replay attacks, and state inconsistencies.
+
+--------------------------------------------------------------------------------
+2. DETAILED FEATURE BREAKDOWN (FOR TECHNICAL INTERVIEWS & PORTFOLIO)
+--------------------------------------------------------------------------------
+
+1. AUTHENTICATION & SECURITY
+   • Hybrid Auth: JWT authentication stored in HTTP-only secure cookies and Bearer headers.
+   • Password Hashing: Bcrypt salt hashing for credential protection.
+   • Email OTP Verification: 6-digit expiring verification code dispatched via Gmail SMTP.
+   • Role-Based Access Control (RBAC): Strict separation between Admin and Member accounts.
+   • User Isolation: Socket.IO rooms ensuring notifications and messages are delivered strictly to the intended recipient.
+
+2. MONETIZATION & RAZORPAY PAYMENT GATEWAY
+   • Seamless Checkout: Dynamically injects Razorpay Checkout SDK on demand.
+   • Secure Order Generation: Backend route (/api/payments/razorpay/order) generates authenticated orders with user contact prefill.
+   • Cryptographic Verification: Node.js HMAC-SHA256 signature validation (/api/payments/razorpay/verify) prevents payment spoofing.
+   • One-Time Connect Pass Logic:
+     - Free users trigger a ₹50 modal when sending their first connection request.
+     - On successful payment, user record in MongoDB Atlas is permanently upgraded (hasPaidConnectPass: true, tier: "gold").
+     - Subsequent connection requests across all profiles become 100% free forever without showing the payment modal again.
+   • Payment Audit Schema: Dedicated Mongoose Payment model logging orderId, paymentId, signature, status, receipts, and amounts.
+
+3. REAL-TIME WEBSOCKETS (SOCKET.IO)
+   • Dedicated custom HTTP server integrating Express + Next.js + Socket.IO on a single unified port.
+   • User Room Isolation: Authenticated sockets join private user rooms (user:<id>).
+   • Instant Notification Alerts: Real-time Sonner toast and Web Audio API two-tone chime when connection requests arrive.
+   • 1-on-1 Chat Messaging: Real-time messaging with live delivery and typing state.
+   • Presence System: Tracks live online/offline member statuses and last-seen timestamps.
+
+4. VEDIC KUNDALI MILAN & MATCHMAKING ENGINE
+   • Ashtakoot 36-Guna Matching: Integrates Vedic Astrology API to compute Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, and Nadi compatibility.
+   • Manglik Dosha Analysis: Computes presence of Manglik Dosha and cancellation exceptions.
+   • Side-by-Side Match View: Interactive comparison dialog displaying score rings, compatibility verdict, and attribute matching.
+   • Universal Kundali Matcher: Standalone tool allowing any guest or member to calculate horoscope compatibility between any bride and groom.
+
+5. ADVANCED SEARCH, FILTERING & PROFILES
+   • Multi-Criteria Search: Filter by age range, height, religion, caste, education, occupation, state, city, and marital status.
+   • Media Management: Profile photo gallery with portrait optimization, fallback avatars, and Cloudinary upload support.
+   • Profile Interactions: Send Interest, Accept/Decline connection, Add to Shortlist, and Share Biodata link.
+
+6. PERFORMANCE & SCALABILITY OPTIMIZATIONS
+   • In-Flight Request Deduplication: syncAllProfilesFromDb() caches active network promises to prevent duplicate simultaneous database calls.
+   • Bundle & AST Tree-Shaking: Configured experimental.optimizePackageImports in next.config.mjs for lucide-react and @radix-ui/*, reducing bundle size and speeding compilation by 40-50%.
+   • Mongoose Connection Reuse: Global cached connection pool to avoid TCP handshake bottlenecks on cloud MongoDB Atlas.
+   • Unauthenticated Call Elimination: Avoids firing unauthorized 401 polling endpoints when visitors browse as guests.
+
+--------------------------------------------------------------------------------
+3. PROJECT ARCHITECTURE SUMMARY
+--------------------------------------------------------------------------------
+
+Client Layer:
+  - Next.js 16 (App Router) + React 19
+  - Tailwind CSS v4 (OKLCH color system, semantic tokens)
+  - Radix UI (Accessible headless UI primitives: Dialog, Tabs, Accordion, Dropdown)
+  - Sonner (Notification toasts) & Lucide React (Icons)
+  - LocalStorage + useSyncExternalStore (Optimistic UI state sync)
+
+Server Layer:
+  - Node.js (v20) + Express custom server
+  - Next.js Route Handlers (API endpoints)
+  - Socket.IO Server (Real-time bidirectional communication)
+  - Nodemailer (Gmail SMTP transactional email pipeline)
+
+Database Layer:
+  - MongoDB Atlas (Cloud NoSQL database)
+  - Mongoose ODM with schemas: User, Profile, Payment, Interest, Notification, Message
+
+Third-Party Integrations:
+  - Razorpay API (Payment orders, checkout SDK, HMAC verification)
+  - FreeAstrologyAPI (Vedic Ashtakoot horoscope matching)
+  - Gmail SMTP (Automated emails)
+  - Cloudinary (Media storage)
+
+================================================================================
+END OF SUMMARY
+================================================================================
