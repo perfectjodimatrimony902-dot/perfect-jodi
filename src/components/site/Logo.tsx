@@ -21,12 +21,12 @@ export function Logo({
   return (
     <Link
       to="/"
-      className={cn("group inline-flex items-center gap-3", className)}
+      className={cn("group inline-flex items-center gap-2.5 sm:gap-3 shrink-0 whitespace-nowrap select-none", className)}
       aria-label={`${settings.siteName} home`}
     >
       <span
         className={cn(
-          "flex items-center justify-center rounded-full border font-bold shrink-0 shadow-sm",
+          "flex items-center justify-center rounded-full border font-bold shrink-0 shadow-sm transition-transform group-hover:scale-105",
           isLg ? "h-12 w-12 text-2xl" : "h-10 w-10 text-xl",
           inverted ? "border-gold text-gold" : "border-gold/60 bg-primary text-gold",
         )}
@@ -35,11 +35,11 @@ export function Logo({
         {first?.[0]}
         {rest[0]?.[0]}
       </span>
-      <div className="flex flex-col">
+      <div className="flex flex-col shrink-0">
         <span
           className={cn(
-            "font-bold tracking-tight leading-none",
-            isLg ? "text-3xl sm:text-4xl" : "text-2xl",
+            "font-bold tracking-tight leading-none whitespace-nowrap",
+            isLg ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl",
             inverted ? "text-white" : "text-primary",
           )}
         >
@@ -48,8 +48,8 @@ export function Logo({
         </span>
         <span
           className={cn(
-            "tracking-tight font-medium mt-1",
-            isLg ? "text-xs text-gold font-semibold" : "text-[10px]",
+            "tracking-tight font-medium mt-1 whitespace-nowrap leading-tight",
+            isLg ? "text-xs text-gold font-semibold" : "text-[10px] sm:text-[11px]",
             !isLg && (inverted ? "text-gold/90" : "text-muted-foreground"),
           )}
         >

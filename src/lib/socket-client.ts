@@ -75,7 +75,7 @@ export function getSocket(customToken?: string): Socket | null {
   });
 
   let triedFallbackPort = false;
-  socketInstance.on("connect_error", (err) => {
+  socketInstance.on("connect_error", (err: Error) => {
     // If primary port 8080 timed out or was unreachable on localhost, try standalone port 5001
     if (
       !triedFallbackPort &&
